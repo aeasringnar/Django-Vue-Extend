@@ -3,7 +3,6 @@
 *.mo
 *~
 .coverage
-db.sqlite3
 log/**
 !log/placeholder
 media/**
