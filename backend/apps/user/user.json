@@ -1,0 +1,25 @@
+[
+  {
+    "model": "user.Group",
+    "pk": 1,
+    "fields": {
+      "group_type": "SuperAdmin",
+      "sort_time": "2019-01-01 00:00:00",
+      "created": "2019-01-01 00:00:00",
+      "updated": "2019-01-01 00:00:00"
+    }
+  },
+  },
+  {
+    "model": "user.User",
+    "pk": 1,
+    "fields": {
+      "username": "superadmin",
+      "password": "123456",
+      "group": 1,
+      "sort_time": "2019-01-01 00:00:00",
+      "created": "2019-01-01 00:00:00",
+      "updated": "2019-01-01 00:00:00"
+    }
+  }
+]
