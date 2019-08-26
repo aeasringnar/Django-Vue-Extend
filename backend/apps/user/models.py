@@ -3,7 +3,12 @@ from soft_delete_it.models import SoftDeleteModel
 from base.models import BaseModel
 
 class Group(SoftDeleteModel, BaseModel):
-    group_type = models.CharField(max_length=255, verbose_name='用户组类型')
+    group_type_choices = (
+        ('SuperAdmin', '超级管理员'),
+        ('Admin', '管理员'),
+        ('NormalUser', '普通用户'),
+    )
+    group_type = models.CharField(max_length=255, choices=group_type_choices, verbose_name='用户组类型')
 
     class Meta:
         db_table = 'A_Group_Table'
