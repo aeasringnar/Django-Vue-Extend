@@ -26,8 +26,8 @@ class Auth(SoftDeleteModel, BaseModel):
 
 
 class GroupAuth(SoftDeleteModel, BaseModel):
-    object_name = models.CharField( max_length=255, default='', verbose_name='功能名称')
-    object_name_cn = models.CharField(max_length=255, default='', verbose_name='功能名称-中文')
+    object_name = models.CharField( max_length=255, verbose_name='功能名称')
+    object_name_cn = models.CharField(max_length=255, verbose_name='功能名称-中文')
     auth = models.ForeignKey(Auth, on_delete=models.PROTECT, verbose_name='权限组', related_name='auth_menus')
     auth_list = models.NullBooleanField(default=False, verbose_name='查看')
     auth_create = models.NullBooleanField(default=False, verbose_name='新增')
@@ -42,15 +42,15 @@ class GroupAuth(SoftDeleteModel, BaseModel):
 
 class User(SoftDeleteModel, BaseModel):
     status_type_choices = (
-        ('0', '冻结'),
-        ('1', '正常'),
+        (0, '冻结'),
+        (1, '正常'),
     )
     username = models.CharField(max_length=255, verbose_name='用户账号')
     phone = models.CharField(max_length=11, null=True, blank=True, verbose_name='用户手机号')
-    email = models.EmailField(default='', null=True, blank=True, verbose_name='用户邮箱')
+    email = models.EmailField(null=True, blank=True, verbose_name='用户邮箱')
     password = models.CharField(max_length=255, default='123456', verbose_name='用户密码')
-    real_name = models.CharField(max_length=255, default='', null=True, blank=True, verbose_name='姓名')
-    status = models.CharField(max_length=255, default='1', choices=status_type_choices,  verbose_name='用户状态')
+    real_name = models.CharField(max_length=255, null=True, blank=True, verbose_name='姓名')
+    status = models.IntegerField(max_length=255, default=1, choices=status_type_choices,  verbose_name='用户状态')
     group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name='用户组')
     auth = models.ForeignKey(Auth, on_delete=models.PROTECT, null=True, blank=True, verbose_name='权限组')
     bf_logo_time = models.DateTimeField(null=True, blank=True, verbose_name='上次登录时间')

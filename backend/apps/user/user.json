@@ -9,6 +9,25 @@
       "updated": "2019-01-01 00:00:00"
     }
   },
+  {
+    "model": "user.Group",
+    "pk": 2,
+    "fields": {
+      "group_type": "Admin",
+      "sort_time": "2019-01-01 00:00:00",
+      "created": "2019-01-01 00:00:00",
+      "updated": "2019-01-01 00:00:00"
+    }
+  },
+  {
+    "model": "user.Group",
+    "pk": 3,
+    "fields": {
+      "group_type": "NormalUser",
+      "sort_time": "2019-01-01 00:00:00",
+      "created": "2019-01-01 00:00:00",
+      "updated": "2019-01-01 00:00:00"
+    }
   },
   {
     "model": "user.User",

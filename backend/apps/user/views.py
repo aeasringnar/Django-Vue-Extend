@@ -51,10 +51,10 @@ __in 在某某范围内
 is null / is not null 为空/非空
 .exclude(age=10) 查询年龄不为10的数据
 '''
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
-from rest_framework_extensions.cache.decorators import (
-    cache_response
-)
+# from rest_framework_extensions.cache.mixins import CacheResponseMixin
+# from rest_framework_extensions.cache.decorators import (
+#     cache_response
+# )
 
 
 class LoginView(generics.GenericAPIView):
