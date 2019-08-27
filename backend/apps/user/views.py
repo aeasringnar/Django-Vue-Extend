@@ -110,9 +110,7 @@ class UserViewset(ModelViewSet):
     pagination_class = Pagination
 
     def get_serializer_class(self):
-        if self.action == 'create':
-            return AddUserSerializer
-        if self.action == 'update' or self.action == 'partial_update':
+        if self.action in ['create', 'update', 'partial_update']:
             return AddUserSerializer
         return ReturnUserSerializer
 
@@ -120,7 +118,7 @@ class UserViewset(ModelViewSet):
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from drf_renderer_xlsx.mixins import XLSXFileMixin
 from drf_renderer_xlsx.renderers import XLSXRenderer
-
+# 测试的导出
 class UserDictExportViewset(XLSXFileMixin, ReadOnlyModelViewSet):
     
     queryset = User.objects.all()
@@ -153,78 +151,74 @@ class UserInfo(APIView):
             user = User.objects.filter(id=request.user.id).first()
             user.bf_logo_time = user.updated
             user.save()
-            serializer_user_data = UserInfoSerializer(user)
-            # timeout=0 立即过期 timeout=None 永不超时
-            cache.set("key", "value", timeout=None)
-            print(cache.get('key'))
-            json_data['data'] = serializer_user_data.data
+            json_data['data'] = ReturnUserSerializer(user).data
             return Response(json_data)
         except Exception as e:
             print('发生错误：',e)
             return Response({"message": "出现了无法预料的view视图错误：%s" % e, "errorCode": 1, "data": {}})
 
 
-class GroupViewset(ModelViewSet):
+class AuthViewset(ModelViewSet):
     '''
     修改局部数据
-    create:  创建用户组
-    retrieve:  检索某个用户组
-    update:  更新用户组
-    destroy:  删除用户组
-    list:  获取用户组列表
+    create:  创建权限
+    retrieve:  检索某个权限
+    update:  更新权限
+    destroy:  删除权限
+    list:  获取权限列表
     '''
-    queryset = Group.objects.all().order_by('-updated')
+    queryset = Auth.objects.all().order_by('-updated')
     authentication_classes = (JWTAuthentication,)
     permission_classes = [BaseAuthPermission, ]
     throttle_classes = [VisitThrottle]
-    serializer_class = ReturnGroupSerializer
+    serializer_class = ReturnAuthSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
-    search_fields = ('group_type',)
+    search_fields = ('auth_type',)
     ordering_fields = ('updated', 'sort_time', 'created',)
     pagination_class = Pagination
 
     def get_serializer_class(self):
-        if self.action == 'create':
-            return AddGroupSerializer
-        if self.action == 'update' or self.action == 'partial_update':
-            return AddGroupSerializer
-        return ReturnGroupSerializer
+        if self.action in ['create', 'update', 'partial_update']:
+            return AddAuthSerializer
+        return ReturnAuthSerializer
 
     def create(self, request, *args, **kwargs):
-        back_auths = request.data.get('back_auths')
-        print('back_auths:', back_auths)
+        
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        auth_permissions = request.data.get('auth_permissions')
+        print('auth_permissions:', auth_permissions)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        # 创建用户组菜单的方法
-        group_id = serializer.data.get('id')
-        if back_auths:
-            for item in back_auths:
-                item['group'] = group_id
-                item_ser = GroupAuthSerializer(data=item)
+        # 创建权限菜单的方法
+        auth_id = serializer.data.get('id')
+        if auth_permissions:
+            for item in auth_permissions:
+                item['auth'] = auth_id
+                item_ser = AddAuthPermissionSerializer(data=item)
                 if not item_ser.is_valid():
                     return Response({"message": str(item_ser.errors), "errorCode": 1, "data": {}})
                 item_ser.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
-        back_auths = request.data.get('back_auths')
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+        auth_permissions = request.data.get('auth_permissions')
+        print('auth_permissions:', auth_permissions)
         self.perform_update(serializer)
-        group_id = serializer.data.get('id')
-        if back_auths:
-            for item in back_auths:
+        # 修改权限菜单的方法
+        auth_id = serializer.data.get('id')
+        if auth_permissions:
+            for item in auth_permissions:
                 if item.get('id'):
-                    before_object = GroupAuth.objects.filter(id=item.get('id')).first()
-                    item_ser = GroupAuthSerializer(instance=before_object, data=item)
+                    before_object = AuthAuth.objects.filter(id=item.get('id')).first()
+                    item_ser = AddAuthPermissionSerializer(instance=before_object, data=item)
                 else:
-                    item['group'] = group_id
-                    item_ser = GroupAuthSerializer(data=item)
+                    item['auth'] = auth_id
+                    item_ser = AddAuthPermissionSerializer(data=item)
                 if not item_ser.is_valid():
                     return Response({"message": str(item_ser.errors), "errorCode": 1, "data": {}})
                 item_ser.save()

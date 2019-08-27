@@ -113,6 +113,9 @@ class Tests(APIView):
         '''
         try:
             json_data = {"message": "ok", "errorCode": 0, "data": {}}
+            # timeout=0 立即过期 timeout=None 永不超时
+            cache.set("key", "value", timeout=None)
+            print(cache.get('key'))
             return Response(json_data)
         except Exception as e:
             print('发生错误：',e)

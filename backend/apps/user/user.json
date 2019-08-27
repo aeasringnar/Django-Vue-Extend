@@ -4,6 +4,7 @@
     "pk": 1,
     "fields": {
       "group_type": "SuperAdmin",
+      "group_type_cn": "超级管理员",
       "sort_time": "2019-01-01 00:00:00",
       "created": "2019-01-01 00:00:00",
       "updated": "2019-01-01 00:00:00"
@@ -14,6 +15,7 @@
     "pk": 2,
     "fields": {
       "group_type": "Admin",
+      "group_type_cn": "管理员",
       "sort_time": "2019-01-01 00:00:00",
       "created": "2019-01-01 00:00:00",
       "updated": "2019-01-01 00:00:00"
@@ -24,6 +26,7 @@
     "pk": 3,
     "fields": {
       "group_type": "NormalUser",
+      "group_type_cn": "普通用户",
       "sort_time": "2019-01-01 00:00:00",
       "created": "2019-01-01 00:00:00",
       "updated": "2019-01-01 00:00:00"

@@ -1,7 +1,7 @@
 from rest_framework import permissions
 from rest_framework.permissions import DjangoModelPermissions, IsAdminUser
 from rest_framework.permissions import BasePermission
-from user.models import GroupAuth
+from user.models import AuthPermission
 '''
 mixins.CreateModelMixin	    create   POST	  创建数据
 mixins.RetrieveModelMixin	retrieve GET	  检索数据
@@ -50,7 +50,7 @@ class BaseAuthPermission(object):
         # 访问只需登录路由时
         if self.need_auth_list_check(auth_name):
             return True
-        admin_auth = GroupAuth.objects.filter(object_name=auth_name, auth_id=request.user.auth_id).first()
+        admin_auth = AuthPermission.objects.filter(object_name=auth_name, auth_id=request.user.auth_id).first()
         if request.user.group.group_type in ['SuperAdmin', 'Admin'] and admin_auth:
             if view.action in ['list', 'retrieve']:
                 # 查看权限
@@ -83,7 +83,7 @@ class BaseAuthPermission(object):
         # 访问只需登录路由时
         if self.need_auth_list_check(auth_name):
             return True
-        admin_auth = GroupAuth.objects.filter(object_name=auth_name, auth_id=request.user.auth_id).first()
+        admin_auth = AuthPermission.objects.filter(object_name=auth_name, auth_id=request.user.auth_id).first()
         if request.user.group.group_type in ['SuperAdmin', 'Admin'] and admin_auth:
             if view.action in ['list', 'retrieve']:
                 # 查看权限

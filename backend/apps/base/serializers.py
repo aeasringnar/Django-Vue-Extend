@@ -13,6 +13,7 @@ name = serializers.IntegerField(max_value=None, min_value=None)
 name = serializers.DateTimeField(format=api_settings.DATETIME_FORMAT, input_formats=None)
 name = serializers.DateField(format=api_settings.DATE_FORMAT, input_formats=None)
 name = serializers.BooleanField()
+name = serializers.NullBooleanField()
 name = serializers.ListField(child=serializers.IntegerField(min_value=0, max_value=100))
 name = serializers.DictField(child=<A_FIELD_INSTANCE>, allow_empty=True)  DictField(child=CharField())
 Q(name__icontains=keyword) 内部是like模糊搜索

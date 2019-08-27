@@ -9,6 +9,7 @@ class Group(SoftDeleteModel, BaseModel):
         ('NormalUser', '普通用户'),
     )
     group_type = models.CharField(max_length=255, choices=group_type_choices, verbose_name='用户组类型')
+    group_type_cn = models.CharField(max_length=255, verbose_name='用户组类型-cn')
 
     class Meta:
         db_table = 'A_Group_Table'
@@ -25,17 +26,17 @@ class Auth(SoftDeleteModel, BaseModel):
         verbose_name_plural = verbose_name
 
 
-class GroupAuth(SoftDeleteModel, BaseModel):
+class AuthPermission(SoftDeleteModel, BaseModel):
     object_name = models.CharField( max_length=255, verbose_name='功能名称')
     object_name_cn = models.CharField(max_length=255, verbose_name='功能名称-中文')
-    auth = models.ForeignKey(Auth, on_delete=models.PROTECT, verbose_name='权限组', related_name='auth_menus')
+    auth = models.ForeignKey(Auth, on_delete=models.PROTECT, verbose_name='权限组', related_name='auth_permissions')
     auth_list = models.NullBooleanField(default=False, verbose_name='查看')
     auth_create = models.NullBooleanField(default=False, verbose_name='新增')
     auth_update = models.NullBooleanField(default=False, verbose_name='修改')
     auth_destroy = models.NullBooleanField(default=False, verbose_name='删除')
 
     class Meta:
-        db_table = 'A_GroupAuth_Table'
+        db_table = 'A_AuthPermission_Table'
         verbose_name = '权限菜单表'
         verbose_name_plural = verbose_name
 
