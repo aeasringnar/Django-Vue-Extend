@@ -50,7 +50,7 @@ class User(SoftDeleteModel, BaseModel):
     email = models.EmailField(null=True, blank=True, verbose_name='用户邮箱')
     password = models.CharField(max_length=255, default='123456', verbose_name='用户密码')
     real_name = models.CharField(max_length=255, null=True, blank=True, verbose_name='姓名')
-    status = models.IntegerField(max_length=255, default=1, choices=status_type_choices,  verbose_name='用户状态')
+    status = models.IntegerField(default=1, choices=status_type_choices,  verbose_name='用户状态')
     group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name='用户组')
     auth = models.ForeignKey(Auth, on_delete=models.PROTECT, null=True, blank=True, verbose_name='权限组')
     bf_logo_time = models.DateTimeField(null=True, blank=True, verbose_name='上次登录时间')
