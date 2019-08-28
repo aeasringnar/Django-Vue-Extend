@@ -214,7 +214,7 @@ class AuthViewset(ModelViewSet):
         if auth_permissions:
             for item in auth_permissions:
                 if item.get('id'):
-                    before_object = AuthAuth.objects.filter(id=item.get('id')).first()
+                    before_object = Auth.objects.filter(id=item.get('id')).first()
                     item_ser = AddAuthPermissionSerializer(instance=before_object, data=item)
                 else:
                     item['auth'] = auth_id
