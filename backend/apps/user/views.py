@@ -139,7 +139,6 @@ class UserDictExportViewset(XLSXFileMixin, ReadOnlyModelViewSet):
 class UserInfo(APIView):
     authentication_classes = (JWTAuthentication,)
 
-    # @cache_response()
     def get(self, request, *args, **kwargs):
         '''
         获取个人信息
@@ -182,46 +181,11 @@ class AuthViewset(ModelViewSet):
             return AddAuthSerializer
         return ReturnAuthSerializer
 
-    def create(self, request, *args, **kwargs):
-        
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        auth_permissions = request.data.get('auth_permissions')
-        print('auth_permissions:', auth_permissions)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        # 创建权限菜单的方法
-        auth_id = serializer.data.get('id')
-        if auth_permissions:
-            for item in auth_permissions:
-                item['auth'] = auth_id
-                item_ser = AddAuthPermissionSerializer(data=item)
-                if not item_ser.is_valid():
-                    return Response({"message": str(item_ser.errors), "errorCode": 1, "data": {}})
-                item_ser.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+    def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        auth_permissions = request.data.get('auth_permissions')
-        print('auth_permissions:', auth_permissions)
-        self.perform_update(serializer)
-        # 修改权限菜单的方法
-        auth_id = serializer.data.get('id')
-        if auth_permissions:
-            for item in auth_permissions:
-                if item.get('id'):
-                    before_object = Auth.objects.filter(id=item.get('id')).first()
-                    item_ser = AddAuthPermissionSerializer(instance=before_object, data=item)
-                else:
-                    item['auth'] = auth_id
-                    item_ser = AddAuthPermissionSerializer(data=item)
-                if not item_ser.is_valid():
-                    return Response({"message": str(item_ser.errors), "errorCode": 1, "data": {}})
-                item_ser.save()
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-        return Response(serializer.data)
+        # 删除权限子表
+        auths = AuthPermission.objects.filter(auth_id=instance.id)
+        for item in auths:
+            item.delete()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

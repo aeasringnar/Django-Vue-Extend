@@ -2,62 +2,76 @@ from rest_framework import serializers
 from rest_framework.serializers import SerializerMethodField
 from rest_framework.validators import UniqueValidator
 from base.serializers import BaseModelSerializer
+from rest_framework.utils import model_meta
 from .models import *
 import time
 import datetime
+import threading
 
-
-# 登录view的表单验证
-class LoginViewSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-    # test = serializers.DictField(child=serializers.CharField(required=True))
-
-# 新增用户使用
-class AddUserSerializer(serializers.ModelSerializer, BaseModelSerializer):
-
-    class Meta:
-        model = User
-        exclude = ('deleted',)
-
-# ReturnUserSerializer 使用的group序列化器
-class UserUseGroupSerializer(serializers.ModelSerializer, BaseModelSerializer):
-
-    class Meta:
-        model = Group
-        exclude = ('deleted',) 
-
-# 新增权限菜单使用
-class AddAuthPermissionSerializer(serializers.ModelSerializer, BaseModelSerializer):
-
-    class Meta:
-        model = AuthPermission
-        exclude = ('deleted',)
 
 
 # 新增权限菜单约束使用
-class auth_permissions_ser(serializers.Serializer):
-    object_name = serializers.CharField()
-    object_name_cn = serializers.CharField()
-    auth_list = serializers.NullBooleanField()
-    auth_create = serializers.NullBooleanField()
-    auth_update = serializers.NullBooleanField()
-    auth_destroy = serializers.NullBooleanField()
+class AddAuthPermissionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AuthPermission
+        fields = ['id','object_name', 'object_name_cn','auth_list','auth_create','auth_update','auth_destroy']
+
+def del_worker(datas):
+    for item in datas:
+        item.delete()
+def save_worker(instance, datas):
+    for item in datas:
+        AuthPermission.objects.create(auth=instance, **item)
+
 # 新增权限使用
 class AddAuthSerializer(serializers.ModelSerializer, BaseModelSerializer):
     auth_type = serializers.CharField(label="权限名称", help_text="权限名称", required=True, allow_blank=False,
-                                       validators=[UniqueValidator(queryset=Group.all_objects.all(), message="该权限已经存在")])
-    auth_permissions = auth_permissions_ser(many=True)
+                                       validators=[UniqueValidator(queryset=Auth.objects.all(), message="该权限已经存在")])
+    auth_permissions = AddAuthPermissionSerializer(many=True)
 
     class Meta:
         model = Auth
         exclude = ('deleted',)
 
-    def validate(self, attrs):
-        # 查看前端传来的所有数据
-        print('查看attrs:', attrs)
-        del attrs['auth_permissions']
-        return attrs
+    def create(self, validated_data):
+        auth_permissions_data = validated_data.pop('auth_permissions')
+        auth_per = Auth.objects.create(**validated_data)
+        # 创建权限菜单的方法
+        for item in auth_permissions_data:
+            AuthPermission.objects.create(auth=auth_per, **item)
+        return auth_per
+
+    def update(self, instance, validated_data):
+        # print('查看auth_permissions：', validated_data.get('auth_permissions'))
+        if validated_data.get('auth_permissions'):
+            auth_permissions_data = validated_data.pop('auth_permissions')
+            # 修改时创建权限菜单的方法
+            need_dels = AuthPermission.objects.filter(auth_id=instance.id)
+            # for item in need_dels:
+            #     item.delete()
+            # for item in auth_permissions_data:
+            #     # print('查看：', item)
+            #     # print('查看id：', item.get('id'))
+            #     AuthPermission.objects.create(auth=instance, **item)
+            # 开多线程优化代码
+            del_work = threading.Thread(target=del_worker,args=(need_dels,))
+            del_work.start()
+            save_work = threading.Thread(target=save_worker,args=(instance,auth_permissions_data,))
+            save_work.start()
+            save_work.join()
+
+        # 继承自父类的方法
+        info = model_meta.get_field_info(instance)
+        for attr, value in validated_data.items():
+            if attr in info.relations and info.relations[attr].to_many:
+                field = getattr(instance, attr)
+                field.set(value)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 
 # 返回权限使用
 class ReturnAuthSerializer(serializers.ModelSerializer, BaseModelSerializer):
@@ -68,7 +82,30 @@ class ReturnAuthSerializer(serializers.ModelSerializer, BaseModelSerializer):
         exclude = ('deleted',)
 
 
-# 返回用户使用 userinfo 同时也试一把
+# 登录view的表单验证
+class LoginViewSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+    # test = serializers.DictField(child=serializers.CharField(required=True))
+
+
+# 新增用户使用
+class AddUserSerializer(serializers.ModelSerializer, BaseModelSerializer):
+
+    class Meta:
+        model = User
+        exclude = ('deleted',)
+
+
+# ReturnUserSerializer 使用的group序列化器
+class UserUseGroupSerializer(serializers.ModelSerializer, BaseModelSerializer):
+
+    class Meta:
+        model = Group
+        exclude = ('deleted',) 
+
+
+# 返回用户使用 userinfo
 class ReturnUserSerializer(serializers.ModelSerializer, BaseModelSerializer):
     group = UserUseGroupSerializer()
     auth = ReturnAuthSerializer()
