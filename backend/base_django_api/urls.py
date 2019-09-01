@@ -1,4 +1,4 @@
-from base.views import UploadFile, Tests
+from base.views import UploadFile, Tests, BeginCelery
 from user.views import LoginView, UserViewset, UserInfo, AuthViewset
 from django.contrib import admin
 from django.urls import path, include
@@ -26,11 +26,6 @@ router = DefaultRouter()
 router.register(r'user', UserViewset, base_name='账号管理')
 # 权限管理
 router.register(r'auth', AuthViewset, base_name='权限管理')
-# from tests.views import FtableViewset, StableViewset, BeginCelery
-# # 测试父表管理
-# router.register(r'ftable', FtableViewset, base_name='测试父表管理')
-# # 测试子表管理
-# router.register(r'stable', StableViewset, base_name='测试子表管理')
 
 
 urlpatterns = [
@@ -42,5 +37,5 @@ urlpatterns = [
     path('uploadfile/', UploadFile.as_view(), name='uploadfile'),
     path('tests/', Tests.as_view(), name='tests'),
     path('userinfo/', UserInfo.as_view(), name='userinfo'),
-    # path('celery/', BeginCelery.as_view(), name='tests'),
+    path('celery/', BeginCelery.as_view(), name='tests'),
 ]
