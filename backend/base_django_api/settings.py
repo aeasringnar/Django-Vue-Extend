@@ -250,7 +250,7 @@ crontab范例：
 每天23点执行   0 23 * * *
 '''
 CRONJOBS = [
-    ('*/5 * * * *', 'base.utils.task', '>> /tmp/tasks.log'),
+    ('*/5 * * * *', '../utils/yuyue.one_handle', '>> /tmp/yuyue_tasks.log'),
 ]
 
 
