@@ -4,6 +4,7 @@ import time
 import urllib
 import json
 import requests
+import datetime
 
 angents = [
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
@@ -69,9 +70,11 @@ def main():
 # 逐一运行 等待返回结果
 def one_handle():
     urls = ['http://%s.duotucms.com/index.php/index/order' % str(item) for item in range(1,8)]
+    print('当前请求时间：', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     for url in urls:
         if wait_handle(url) == '0':
             break
+    print('\n')
 
 if __name__ == "__main__":
     # 并发执行
