@@ -250,8 +250,7 @@ crontab范例：
 每天23点执行   0 23 * * *
 '''
 CRONJOBS = [
-    # ('*/1 * * * *', 'python /root/bin/django-vue-extend/backend/utils/yuyue.py', ' >> /root/log/yuyue_tasks.log'),
-    ('*/1 * * * *', 'base.yuyue.one_handle', ' >> /root/log/yuyue_tasks.log'),
+    ('*/5 * * * *', 'base.yuyue.one_handle', ' >> /root/log/yuyue_tasks.log'),
 ]
 
 
