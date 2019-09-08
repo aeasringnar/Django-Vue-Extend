@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'django_filters',
     'drf_yasg',
+    'haystack',
     'django_celery_beat',
     'base.apps.BaseConfig',
     'user.apps.UserConfig',
@@ -82,7 +83,7 @@ ROOT_URLCONF = 'base_django_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR,'templates'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -331,3 +332,19 @@ CELERY_RESULT_SERIALIZER = 'json'
 # REST_FRAMEWORK_EXTENSIONS = {
 #     'DEFAULT_CACHE_RESPONSE_TIMEOUT': 5
 # }
+
+# 全文检索配置
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+    },
+}
+
+'''
+全文检索用到的包
+pip install whoosh 搜索引擎使用Whoosh，这是一个由纯Python实现的全文搜索引擎，没有二进制文件等，比较小巧，配置比较简单，当然性能自然略低。
+pip install jieba 中文分词Jieba，由于Whoosh自带的是英文分词，对中文的分词支持不是太好，故用jieba替换whoosh的分词组件。
+pip install django-haystack 是django的开源搜索框架，该框架支持Solr,Elasticsearch,Whoosh, *Xapian*搜索引擎，不用更改代码，直接切换引擎，减少代码量。
+pip install drf_haystack 是django的开源搜索框架，该框架支持Solr,Elasticsearch,Whoosh, *Xapian*搜索引擎，不用更改代码，直接切换引擎，减少代码量。
+'''
