@@ -141,8 +141,8 @@ class {name}Viewset(ModelViewSet):
     throttle_classes = [VisitThrottle]
     serializer_class = Return{name}Serializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
-    # search_fields = ('field01', 'field02', 'field03',)
-    # filter_fields = ('field01', 'field02', 'field03',)
+    # search_fields = ({searchs})
+    # filter_fields = ({filters})
     ordering_fields = ('updated', 'sort_time', 'created',)
     pagination_class = Pagination
 
@@ -158,7 +158,7 @@ class {name}Viewset(ModelViewSet):
             return {name}.objects.all().order_by('-updated')
         else:
             return {name}.objects.filter(user_id=self.request.user.id).order_by('-updated')
-                """.format(name=name, verbose=verbose, searchs=searchs,filters=filters)
+                """.format(name=name, verbose=verbose, searchs=searchs, filters=filters)
                     # 路由
                     MyUrl = """
 # {verbose}管理
@@ -187,11 +187,11 @@ if __name__ == '__main__':
     # 存放 app名称、模型以及表名
     # 示例：app_list = [{'name': 'tests','models': [{'name':'Group','verbose':'用户组表'},{'name':'User','verbose':'用户表'}]}]
     app_list = [
-        {'name': 'tests','models': [
-            {'name':'Ftable','verbose':'测试父表','searchs':"",'filters':""},
-            {'name':'Stable','verbose':'测试子表','searchs':"'field1', ",'filters':"'field1', "},
+        {'name': 'flow','models': [
+            {'name':'FlowGroup','verbose':'审批组表','searchs':"'name', ",'filters':""},
+            {'name':'FlowUser','verbose':'审批组子表','searchs':"'name', ",'filters':"'flow_group', "},
             ]
         },
         ]
-    app_list = []
+    # app_list = []
     main(app_list)

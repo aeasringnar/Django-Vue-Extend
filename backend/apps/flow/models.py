@@ -2,6 +2,7 @@ from django.db import models
 from soft_delete_it.models import SoftDeleteModel
 from base.models import BaseModel
 
+# 第一种审批方案：提前设置好审批流以及审批流内的组
 class FlowGroup(SoftDeleteModel, BaseModel):
     name = models.CharField(max_length=255, verbose_name='审批组名称')
 
@@ -13,7 +14,7 @@ class FlowGroup(SoftDeleteModel, BaseModel):
 
 class FlowUser(SoftDeleteModel, BaseModel):
     name = models.CharField(max_length=255, verbose_name='审批组内员工名称-test')
-    flow_group = models.ManyToManyField(Author, verbose_name='所属审批组', related_name='flow_users')
+    flow_group = models.ManyToManyField(FlowGroup, verbose_name='所属审批组', null=True, blank=True, related_name='flow_users')
 
     class Meta:
         db_table = 'A_FlowUser_Table'
