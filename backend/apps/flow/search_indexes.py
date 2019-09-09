@@ -1,7 +1,7 @@
 from django.utils import timezone
 from haystack import indexes
 # from .models import Location
-from flow.models import FlowGroup
+from flow.models import FlowGroup,FlowUser
 # class FlowGroupIndex(indexes.SearchIndex, indexes.Indexable):     # 类名必须为需要检索的Model_name+Index，这里需要检索Note，所以创建NoteIndex
 #     text = indexes.CharField(document=True, use_template=True)  # 创建一个text字段
  
@@ -32,6 +32,18 @@ class FlowGroupIndex(indexes.SearchIndex, indexes.Indexable):
 
     def get_model(self):
         return FlowGroup
+
+    def index_queryset(self, using=None):
+        return self.get_model().objects.all()
+
+
+class FlowUserIndex(indexes.SearchIndex, indexes.Indexable):
+    
+    text = indexes.CharField(document=True, use_template=True)
+    username = indexes.CharField(model_attr="name")
+
+    def get_model(self):
+        return FlowUser
 
     def index_queryset(self, using=None):
         return self.get_model().objects.all()
