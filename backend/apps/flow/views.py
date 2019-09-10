@@ -180,4 +180,7 @@ class FlowGroupSearchView(HaystackViewSet):
     index_models = [FlowGroup, FlowUser]
 
     serializer_class = FlowGroupSerializer
+
+    # 配置检索分页
+    pagination_class = Pagination
                 
