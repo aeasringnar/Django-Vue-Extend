@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'django_crontab',
     'django_filters',
     'drf_yasg',
-    'haystack',
     'django_celery_beat',
     'base.apps.BaseConfig',
     'user.apps.UserConfig',
@@ -333,6 +332,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 #     'DEFAULT_CACHE_RESPONSE_TIMEOUT': 5
 # }
 
+'''
 # 全文检索配置
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -344,7 +344,7 @@ HAYSTACK_CONNECTIONS = {
 
 # 配置自动更新索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
-
+'''
 '''
 全文检索用到的包
 pip install whoosh 搜索引擎使用Whoosh，这是一个由纯Python实现的全文搜索引擎，没有二进制文件等，比较小巧，配置比较简单，当然性能自然略低。

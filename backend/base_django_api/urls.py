@@ -26,13 +26,9 @@ router = DefaultRouter()
 router.register(r'user', UserViewset, base_name='账号管理')
 # 权限管理
 router.register(r'auth', AuthViewset, base_name='权限管理')
-from flow.views import FlowGroupViewset, FlowUserViewset, TestManyToManyView, FlowGroupSearchView
+# from flow.views import FlowGroupViewset
 # 审批组表管理
-router.register(r'flowgroup', FlowGroupViewset, base_name='审批组表管理')
-# 审批组子表管理
-router.register(r'flowuser', FlowUserViewset, base_name='审批组子表管理')
-# 全文检索
-router.register(r"search", FlowGroupSearchView, base_name="全文检索")
+# router.register(r'flowgroup', FlowGroupViewset, base_name='审批组表管理')
 
 
 urlpatterns = [
@@ -45,5 +41,4 @@ urlpatterns = [
     path('tests/', Tests.as_view(), name='tests'),
     path('userinfo/', UserInfo.as_view(), name='userinfo'),
     path('celery/', BeginCelery.as_view(), name='tests'),
-    path('testmany/', TestManyToManyView.as_view(), name='tests'),
 ]
