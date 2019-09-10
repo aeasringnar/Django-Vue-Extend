@@ -188,8 +188,9 @@ if __name__ == '__main__':
     # 示例：app_list = [{'name': 'tests','models': [{'name':'Group','verbose':'用户组表'},{'name':'User','verbose':'用户表'}]}]
     app_list = [
         {'name': 'flow','models': [
-            {'name':'FlowGroup','verbose':'审批组表','searchs':"'name', ",'filters':""},
-            {'name':'FlowUser','verbose':'审批组子表','searchs':"'name', ",'filters':"'flow_group', "},
+            {'name':'FlowGroup','verbose':'审批组','searchs':"'name', ",'filters':""},
+            {'name':'ApprovalFlow','verbose':'审批设置','searchs':"'name', ",'filters':"'flow_group', "},
+            {'name':'FlowBody','verbose':'审批主体','searchs':"'abstract', 'content', ",'filters':"'user', 'object_flow', "},
             ]
         },
         ]

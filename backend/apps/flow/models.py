@@ -15,7 +15,7 @@ class FlowGroup(SoftDeleteModel, BaseModel):
 
 
 class ApprovalFlow(SoftDeleteModel, BaseModel):
-    flow_name = models.CharField(max_length=255, verbose_name='审批名称')
+    name = models.CharField(max_length=255, verbose_name='审批名称')
 
     class Meta:
         db_table = 'A_ApprovalFlow_Table'
@@ -35,7 +35,7 @@ class ApprovalFlowFuc(SoftDeleteModel, BaseModel):
 
 
 class ObjectFlow(SoftDeleteModel, BaseModel):
-    flow_name = models.CharField(max_length=255, verbose_name='审批名称')
+    name = models.CharField(max_length=255, verbose_name='审批名称')
 
     class Meta:
         db_table = 'A_ObjectFlow_Table'
