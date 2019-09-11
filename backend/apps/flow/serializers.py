@@ -124,6 +124,20 @@ class AddFlowBodySerializer(serializers.ModelSerializer, BaseModelSerializer):
         del attrs['approval_flow']
         return attrs
     
+
+class ObjectFlowFucSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ObjectFlowFuc
+        exclude = ('deleted',) 
+
+
+class ObjectFlowSerializer(serializers.ModelSerializer):
+    object_flow_fucs = ObjectFlowFucSerializer(many=True)
+    class Meta:
+        model = ObjectFlow
+        exclude = ('deleted',) 
+
+
 # 修改 审批主体 序列化器
 class UpdateFlowBodySerializer(serializers.ModelSerializer):
     class Meta:
@@ -132,6 +146,7 @@ class UpdateFlowBodySerializer(serializers.ModelSerializer):
         # read_only_fields = ('field01', )
 # 返回 审批主体 序列化器
 class ReturnFlowBodySerializer(serializers.ModelSerializer):
+    object_flow = ObjectFlowSerializer()
     class Meta:
         model = FlowBody
         exclude = ('deleted',) # or fields = '__all__' or fields = ['field01','field01',]
