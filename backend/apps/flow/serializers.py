@@ -64,10 +64,7 @@ class AddApprovalFlowSerializer(serializers.ModelSerializer, BaseModelSerializer
             for item in need_dels:
                 item.delete()
             for item in func_datas:
-                # print('查看：', item)
-                # print('查看id：', item.get('id'))
                 ApprovalFlowFuc.objects.create(approval_flow=instance, **item)
-
         # 继承自父类的方法
         info = model_meta.get_field_info(instance)
         for attr, value in validated_data.items():
@@ -83,10 +80,17 @@ class AddApprovalFlowSerializer(serializers.ModelSerializer, BaseModelSerializer
 class UpdateApprovalFlowSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApprovalFlow
-        exclude = ('deleted',) # or fields = '__all__' or fields = ['field01','field01',]
-        # read_only_fields = ('field01', )
+        exclude = ('deleted',)
+
+class ReturnApprovalFlowUseFucSerializer(serializers.ModelSerializer, BaseModelSerializer):
+    flow_group = AddFlowGroupSerializer()
+    class Meta:
+        model = ApprovalFlowFuc
+        fields = ['flowfuc_grade','flow_group']
+
 # 返回 审批设置 序列化器
 class ReturnApprovalFlowSerializer(serializers.ModelSerializer):
+    approval_flow_fucs = ReturnApprovalFlowUseFucSerializer(many=True)
     class Meta:
         model = ApprovalFlow
         exclude = ('deleted',) # or fields = '__all__' or fields = ['field01','field01',]
@@ -96,10 +100,30 @@ class ReturnApprovalFlowSerializer(serializers.ModelSerializer):
 
 # 新增 审批主体 序列化器
 class AddFlowBodySerializer(serializers.ModelSerializer, BaseModelSerializer):
+    approval_flow = serializers.IntegerField(label='审批流ID')
     class Meta:
         model = FlowBody
-        exclude = ('deleted',) # or fields = '__all__' or fields = ['field01','field01',]
-        # read_only_fields = ('field01', )
+        exclude = ('deleted','object_flow','user',)
+
+    def validate(self, attrs):
+        print('查看user：', self.context['request'].user)
+        attrs['user'] = self.context['request'].user
+        approval_flow = ApprovalFlow.objects.filter(id=attrs['approval_flow']).first()
+        if not approval_flow:
+            raise serializers.ValidationError("审批流不存在")
+        appflow_fucs = ApprovalFlowFuc.objects.filter(approval_flow_id=approval_flow.id)
+        objectflow = ObjectFlow(name=approval_flow.name)
+        objectflow.save()
+        attrs['object_flow'] = objectflow
+        print('asd', attrs['object_flow'])
+        for item in appflow_fucs:
+            if item.flowfuc_grade == 1:
+                ObjectFlowFuc(flowfuc_grade=item.flowfuc_grade,upper_flow_result=1,object_flow=attrs['object_flow'],flow_group=item.flow_group).save()
+            else:
+                ObjectFlowFuc(flowfuc_grade=item.flowfuc_grade,object_flow=attrs['object_flow'],flow_group=item.flow_group).save()
+        del attrs['approval_flow']
+        return attrs
+    
 # 修改 审批主体 序列化器
 class UpdateFlowBodySerializer(serializers.ModelSerializer):
     class Meta:
