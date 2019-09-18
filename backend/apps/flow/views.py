@@ -202,7 +202,8 @@ class ObjectFlowView(generics.GenericAPIView):
             flowfuc_type = serializer.data.get('flowfuc_type')
             json_data = {"message": '审批成功' if flowfuc_type == 1 else '驳回成功', "errorCode": 0, "data": {}}
             # 找到需要审批的审批日志记录
-            object_flow_fuc = ObjectFlowFuc.objects.filter(user_id=request.user.id, id=flow_fuc_id).first()
+            print('查看用户的flow_groups：', request.user.flow_groups)
+            object_flow_fuc = ObjectFlowFuc.objects.filter(flow_group_id__in=request.user.flow_groups, id=flow_fuc_id).first()
             print(object_flow_fuc)
             # 没有对应数据时报错
             if not object_flow_fuc:
@@ -216,59 +217,9 @@ class ObjectFlowView(generics.GenericAPIView):
             flow_type_name = object_flow_fuc.object_flow.flow_name
             # 当这是最后一级审批时
             if object_flow_fucs.last().id == flow_fuc_id:
-                if flow_type_name == '请假审批':
-                    top_flow_obj = Holiday.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '出差审批':
-                    top_flow_obj = ChuChai.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '报销审批':
-                    top_flow_obj = BaoXiao.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '客户审批':
-                    top_flow_obj = Customer.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '合同审批':
-                    top_flow_obj = Contract.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '运输合同审批':
-                    top_flow_obj = TransportContract.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '预支审批':
-                    top_flow_obj = YuZhi.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '合同终止审批':
-                    top_flow_obj = Contract.objects.filter(zhongzhi_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '运输合同终止审批':
-                    top_flow_obj = TransportContract.objects.filter(zhongzhi_flow_id=object_flow_fuc.object_flow.id).first()
-                elif flow_type_name == '支出审批':
-                    top_flow_obj = PayFlow.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                else:
-                    top_flow_obj = None
-                print(top_flow_obj)
-                if not top_flow_obj:
-                    return Response({"message": "未找到属于当前用户需要的审批记录", "errorCode": 1, "data": {}})
-                if top_flow_obj.status == 3 or top_flow_obj.status == '3':
-                    return Response({"message": "该审批已经被撤回，无法被修改。", "errorCode": 1, "data": {}})
-                # 修改审批记录的状态
-                if flow_type_name == '合同终止审批' or flow_type_name == '运输合同终止审批':
-                    if flowfuc_type in [1,'1']:
-                        top_flow_obj.status = 5
-                    else:
-                        top_flow_obj.status = 1
-                    top_flow_obj.save()
-                elif flow_type_name == '支出审批':
-                    top_flow_obj.status = flowfuc_type
-                    top_flow_obj.save()
-                    if flowfuc_type in [1,'1']:
-                        # budget = BudgetDetail()
-                        to_flow_dict = model_to_dict(top_flow_obj)
-                        del to_flow_dict['deleted']
-                        del to_flow_dict['id']
-                        to_flow_dict['price'] = str(top_flow_obj.price)
-                        print('看看哪里输出',to_flow_dict)
-                        item_ser = AddBudgetDetailSerializer(data=to_flow_dict,context={'request': request})
-                        if not item_ser.is_valid():
-                            print('写入支出明细时发生错误，错误原因如下')
-                            print(str(item_ser.errors))
-                        else:
-                            item_ser.save()
-                else:
-                    top_flow_obj.status = flowfuc_type
-                    top_flow_obj.save()
+                top_flow_obj = FlowBody.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
+                top_flow_obj.status = flowfuc_type
+                top_flow_obj.save()
             else:
                 # 找到下一级的审批流
                 next_object_flow_fuc = ObjectFlowFuc.objects.filter(object_flow_id=object_flow_fuc.object_flow.id, flowfuc_grade=(object_flow_fuc.flowfuc_grade + 1)).first()
@@ -277,40 +228,9 @@ class ObjectFlowView(generics.GenericAPIView):
                 next_object_flow_fuc.upper_flow_result = flowfuc_type
                 next_object_flow_fuc.save()
                 if flowfuc_type == 2 or flowfuc_type == '2':
-                    if flow_type_name == '请假审批':
-                        top_flow_obj = Holiday.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '出差审批':
-                        top_flow_obj = ChuChai.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '报销审批':
-                        top_flow_obj = BaoXiao.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '客户审批':
-                        top_flow_obj = Customer.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '合同审批':
-                        top_flow_obj = Contract.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '运输合同审批':
-                        top_flow_obj = TransportContract.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '预支审批':
-                        top_flow_obj = YuZhi.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '合同终止审批':
-                        top_flow_obj = Contract.objects.filter(zhongzhi_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '运输合同终止审批':
-                        top_flow_obj = TransportContract.objects.filter(zhongzhi_flow_id=object_flow_fuc.object_flow.id).first()
-                    elif flow_type_name == '支出审批':
-                        top_flow_obj = PayFlow.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
-                    else:
-                        top_flow_obj = None
-                    print(top_flow_obj)
-                    if not top_flow_obj:
-                        return Response({"message": "未找到属于当前用户需要的审批记录", "errorCode": 1, "data": {}})
-                    if top_flow_obj.status == 3 or top_flow_obj.status == '3':
-                        return Response({"message": "该审批已经被撤回，无法被修改。", "errorCode": 1, "data": {}})
-                    # 修改审批记录的状态
-                    if flow_type_name == '合同终止审批' or flow_type_name == '运输合同终止审批':
-                        top_flow_obj.status = 1
-                        top_flow_obj.save()
-                    else:
-                        top_flow_obj.status = flowfuc_type
-                        top_flow_obj.save()
+                    top_flow_obj = FlowBody.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
+                    top_flow_obj.status = flowfuc_type
+                    top_flow_obj.save()
             return Response(json_data)
         except Exception as e:
             print('发生错误：',e)
