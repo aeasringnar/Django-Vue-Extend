@@ -104,8 +104,10 @@ class AddFlowBodySerializer(serializers.ModelSerializer, BaseModelSerializer):
     class Meta:
         model = FlowBody
         exclude = ('deleted','object_flow','user',)
+        validators = [UniqueTogetherValidator(queryset=FlowBody.objects.all(), fields=['abstract',], message='该摘要已经存在')]
 
     def validate(self, attrs):
+        print('查看attrs',attrs)
         print('查看user：', self.context['request'].user)
         attrs['user'] = self.context['request'].user
         approval_flow = ApprovalFlow.objects.filter(id=attrs['approval_flow']).first()
@@ -129,6 +131,7 @@ class ObjectFlowFucSerializer(serializers.ModelSerializer):
     class Meta:
         model = ObjectFlowFuc
         exclude = ('deleted',) 
+        depth = 2
 
 
 class ObjectFlowSerializer(serializers.ModelSerializer):
