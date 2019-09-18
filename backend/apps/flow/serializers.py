@@ -145,7 +145,7 @@ class ObjectFlowSerializer(serializers.ModelSerializer):
 class UpdateFlowBodySerializer(serializers.ModelSerializer):
     class Meta:
         model = FlowBody
-        exclude = ('deleted',) # or fields = '__all__' or fields = ['field01','field01',]
+        exclude = ('deleted','object_flow','user',) # or fields = '__all__' or fields = ['field01','field01',]
         # read_only_fields = ('field01', )
 # 返回 审批主体 序列化器
 class ReturnFlowBodySerializer(serializers.ModelSerializer):
