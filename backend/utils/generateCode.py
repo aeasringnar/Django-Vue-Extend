@@ -20,6 +20,7 @@ import threading
 from .models import *
 import time
 import datetime
+import threading
                 """
                 # ModelViewSet视图
                 MyViewSet = """
@@ -67,7 +68,7 @@ name = serializers.DateField(format=api_settings.DATE_FORMAT, input_formats=None
 name = serializers.BooleanField()
 name = serializers.ListField(child=serializers.IntegerField(min_value=0, max_value=100))
 name = serializers.DictField(child=<A_FIELD_INSTANCE>, allow_empty=True)  DictField(child=CharField())
-(mixins.CreateModelMixin,mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,mixins.ListModelMixin,generics.GenericAPIView,viewsets.GenericViewSet)
+(mixins.CreateModelMixin,mixins.RetrieveModelMixin,mixins.UpdateModelMixin,mixins.DestroyModelMixin,mixins.ListModelMixin,GenericViewSet,generics.GenericAPIView)
 Q(name__icontains=keyword) 内部是like模糊搜索
 __gt 大于 
 __gte 大于等于
@@ -149,12 +150,12 @@ class {name}Viewset(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return Add{name}Serializer
-        if self.action == 'update' or self.action == 'partial_update':
+        if self.action in ['update', 'partial_update']:
             return Update{name}Serializer
         return Return{name}Serializer
 
     def get_queryset(self):
-        if bool(self.request.auth) and self.request.user.group_id == 1:
+        if bool(self.request.auth) and self.request.user.group_type in ['SuperAdmin','Admin']:
             return {name}.objects.all().order_by('-update_time')
         elif bool(self.request.auth):
             return {name}.objects.filter(user_id=self.request.user.id).order_by('-update_time')
