@@ -4,7 +4,6 @@
     <el-row>
       <el-col :span="10">
         <el-button size="small" type="primary" @click="new_data">新增</el-button>
-        <el-button size="small" @click="centerDialog_patch = true">编辑</el-button>
       </el-col>
       <el-col :span="4"><p/></el-col>
       <el-col :span="4">
@@ -25,8 +24,12 @@
       stripe
       style="width: 100%">
       <el-table-column prop="id" label="ID"/>
-				<el-table-column prop="auth_type" label="权限名称"/>
-				
+			<el-table-column prop="auth_type" label="权限名称"/>
+			<el-table-column prop="slot" label="权限">
+        <template slot-scope="scope">
+          <span>{{ get_auth(scope.row.auth_permissions) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
           <el-row>
@@ -49,49 +52,48 @@
       center>
       <div>
         <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
-          <el-form-item label="标题" prop="title">
-            <el-input size="small" v-model="ruleForm.title"/>
+          <el-form-item label="权限名称" prop="auth_type">
+            <el-input size="small" v-model="ruleForm.auth_type"/>
           </el-form-item>
-          <el-form-item label="排序" prop="sort">
-            <el-input size="small" v-model.number="ruleForm.sort"/>
-          </el-form-item>
-          <el-form-item label="区域" prop="region">
-            <el-select size="small" v-model="ruleForm.region" placeholder="请选择活动区域" filterable clearable style="width: 100%;">
-              <el-option label="区域一" value="1"/>
-              <el-option label="区域二" value="2"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态" required>
-            <el-switch size="small"
-              v-model="ruleForm.is_status"
+          <h3>权限配置：</h3>
+          <el-form-item label="全选">
+            <el-switch
+              v-model="is_all"
               active-color="#13ce66"
-              inactive-color="#ff4949" />
+              inactive-color="#ff4949"
+              @change="all_change"/>
           </el-form-item>
-          <el-form-item label="日期" prop="date">
-            <el-date-picker size="small" v-model="ruleForm.date" type="date" placeholder="选择日期" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="时间" prop="time">
-            <el-time-picker size="small" v-model="ruleForm.time" type="fixed-time" placeholder="选择时间" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="类型" prop="type">
-            <el-checkbox-group size="small" v-model="ruleForm.type">
-              <el-checkbox label="0" name="type">类型01</el-checkbox>
-              <el-checkbox label="1" name="type">类型02</el-checkbox>
-              <el-checkbox label="2" name="type">类型03</el-checkbox>
-              <el-checkbox label="3" name="type">类型04</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-          <el-form-item label="图片" prop="img_url">
-            <upload-image v-model="ruleForm.img_url"/>
-          </el-form-item>
-          <el-form-item label="文件" prop="rule_file">
-            <upload-file v-model="ruleForm.rule_file"/>
-          </el-form-item>
-          <el-form-item label="内容">
-            <el-input size="small" v-model="ruleForm.desc" type="textarea"/>
-          </el-form-item>
-          <el-form-item label="富文本编辑器" prop="rule_h5">
-            <!-- <tinymce v-model="ruleForm.rule_h5"/> -->
+          <el-form-item v-for="(data,index) in ruleForm.auth_permissions" :key="index" :label="data.object_name_cn + ':'">
+            <el-row>
+              <el-col v-if="data.auth_list != null" :span="6">
+                <el-switch
+                  v-model="data.auth_list"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                查看
+              </el-col>
+              <el-col v-if="data.auth_create != null" :span="6">
+                <el-switch
+                  v-model="data.auth_create"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                新增
+              </el-col>
+              <el-col v-if="data.auth_update != null" :span="6">
+                <el-switch
+                  v-model="data.auth_update"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                修改
+              </el-col>
+              <el-col v-if="data.auth_destroy != null" :span="6">
+                <el-switch
+                  v-model="data.auth_destroy"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                删除
+              </el-col>
+            </el-row>
           </el-form-item>
         </el-form>
       </div>
@@ -157,44 +159,55 @@ export default {
       centerDialog_patch: false,
       page_datas: [],
       ruleForm: {
-        title: '',
-        img_url: '',
-        rule_file: '',
-        rule_h5: '',
-        region: '',
-        type: [],
-        is_status: false,
-        sort: '',
-        date: '',
-        time: '',
-        desc: ''
-      },
-      rules: {
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
-        ],
-        region: [
-          { required: true, message: '请选择活动区域', trigger: 'change' }
-        ],
-        img_url: [
-          { required: true, message: '请上传图片', trigger: 'change' }
-        ],
-        sort: [
-          { required: true, type: 'number', message: '请输入排序序号', trigger: 'blur' },
-          { type: 'number', message: '必须为数字值' }
-        ],
-        date: [
-          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
-        ],
-        time: [
-          { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
-        ],
-        type: [
-          { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
-        ],
-        desc: [
-          { required: true, message: '请填写活动形式', trigger: 'blur' }
+        auth_type: '',
+        auth_permissions: [
+          {
+            object_name: 'user',
+            object_name_cn: '用户管理',
+            auth_list: false,
+            auth_create: false,
+            auth_update: false,
+            auth_destroy: false
+          },
+          {
+            object_name: 'auth',
+            object_name_cn: '权限管理',
+            auth_list: false,
+            auth_create: false,
+            auth_update: false,
+            auth_destroy: false
+          },
+          {
+            object_name: 'flowgroup',
+            object_name_cn: '审批组管理',
+            auth_list: false,
+            auth_create: false,
+            auth_update: false,
+            auth_destroy: false
+          },
+          {
+            object_name: 'approvalflow',
+            object_name_cn: '审批管理',
+            auth_list: false,
+            auth_create: false,
+            auth_update: false,
+            auth_destroy: false
+          },
+          {
+            object_name: 'flowbody',
+            object_name_cn: '审批主体',
+            auth_list: false,
+            auth_create: false,
+            auth_update: false,
+            auth_destroy: false
+          }
         ]
+      },
+      is_all: false,
+      rules: {
+        auth_type: [
+          { required: true, message: '请输入权限名称', trigger: 'blur' }
+        ],
       },
       ruleForm_patch: {
         
@@ -272,7 +285,7 @@ export default {
             // datetime.format(this.ruleForm.date, 'YYYY-MM-DD')
             // console.log(datetime.format(this.ruleForm.time, 'hh:mm:ss'))
             console.log(this.ruleForm)
-            // this.post_need_data(this.ruleForm)
+            this.post_need_data(this.ruleForm)
           } else {
             console.log(this.ruleForm_patch)
             // this.patch_need_data(this.ruleForm_patch)
@@ -333,6 +346,64 @@ export default {
       this.my_pagination.search_type = val
       console.log(this.my_pagination.search_type)
       this.get_need_data(this.my_pagination)
+    },
+    all_change(val) {
+      console.log(val)
+      if (val) {
+        for (var i in this.ruleForm.auth_permissions) {
+          if (this.ruleForm.auth_permissions[i].auth_list != null) {
+            this.ruleForm.auth_permissions[i].auth_list = true
+          }
+          if (this.ruleForm.auth_permissions[i].auth_create != null) {
+            this.ruleForm.auth_permissions[i].auth_create = true
+          }
+          if (this.ruleForm.auth_permissions[i].auth_update != null) {
+            this.ruleForm.auth_permissions[i].auth_update = true
+          }
+          if (this.ruleForm.auth_permissions[i].auth_destroy != null) {
+            this.ruleForm.auth_permissions[i].auth_destroy = true
+          }
+        }
+      } else {
+        for (var i in this.ruleForm.auth_permissions) {
+          if (this.ruleForm.auth_permissions[i].auth_list != null) {
+            this.ruleForm.auth_permissions[i].auth_list = false
+          }
+          if (this.ruleForm.auth_permissions[i].auth_create != null) {
+            this.ruleForm.auth_permissions[i].auth_create = false
+          }
+          if (this.ruleForm.auth_permissions[i].auth_update != null) {
+            this.ruleForm.auth_permissions[i].auth_update = false
+          }
+          if (this.ruleForm.auth_permissions[i].auth_destroy != null) {
+            this.ruleForm.auth_permissions[i].auth_destroy = false
+          }
+        }
+      }
+    },
+    get_auth(auth_permissions) {
+      var auth_str = ''
+      for (var i in auth_permissions) {
+        auth_str += auth_permissions[i].object_name_cn
+        if (auth_permissions[i].auth_list || auth_permissions[i].auth_create || auth_permissions[i].auth_update || auth_permissions[i].auth_destroy) {
+          if (auth_permissions[i].auth_list) {
+            auth_str += '：查看'
+          }
+          if (auth_permissions[i].auth_create) {
+            auth_str += '，新增'
+          }
+          if (auth_permissions[i].auth_update) {
+            auth_str += '，修改'
+          }
+          if (auth_permissions[i].auth_destroy) {
+            auth_str += '，删除'
+          }
+          auth_str += '；\n'
+        } else {
+          auth_str += '：无；\n'
+        }
+      }
+      return auth_str
     }
   }
 }
