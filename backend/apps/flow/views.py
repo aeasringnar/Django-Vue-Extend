@@ -208,6 +208,11 @@ class ObjectFlowView(generics.GenericAPIView):
             # 没有对应数据时报错
             if not object_flow_fuc:
                 return Response({"message": "未找到属于当前用户的该审批流", "errorCode": 1, "data": {}})
+            top_flow_obj = FlowBody.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
+            if top_flow_obj.status in [1,2]:
+                return Response({"message": "当前审批主体已审批，无需重复审批。", "errorCode": 1, "data": {}})
+            if top_flow_obj.status in [3]:
+                return Response({"message": "当前审批主体已撤回，无法审批。", "errorCode": 1, "data": {}})
             # 存在时 改状态
             object_flow_fuc.flowfuc_type = flowfuc_type
             object_flow_fuc.save()
@@ -217,7 +222,6 @@ class ObjectFlowView(generics.GenericAPIView):
             flow_type_name = object_flow_fuc.object_flow.flow_name
             # 当这是最后一级审批时
             if object_flow_fucs.last().id == flow_fuc_id:
-                top_flow_obj = FlowBody.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
                 top_flow_obj.status = flowfuc_type
                 top_flow_obj.save()
             else:
@@ -227,8 +231,7 @@ class ObjectFlowView(generics.GenericAPIView):
                 # 修改下一级审批里的上级审批意见
                 next_object_flow_fuc.upper_flow_result = flowfuc_type
                 next_object_flow_fuc.save()
-                if flowfuc_type == 2 or flowfuc_type == '2':
-                    top_flow_obj = FlowBody.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).first()
+                if flowfuc_type in [2, '2']:
                     top_flow_obj.status = flowfuc_type
                     top_flow_obj.save()
             return Response(json_data)
