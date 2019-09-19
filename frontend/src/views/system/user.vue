@@ -1,32 +1,4 @@
-function creatCode(obj) {
-  var fields = obj.fields
-  var table_str = ``
-  if (fields) {
-      for(let i in fields){
-          table_str += `<el-table-column prop="${fields[i].prop}" label="${fields[i].label}"/>\n\t\t\t\t`
-      }
-  } else {
-      table_str = `<el-table-column prop="id" label="ID" width="80"/>
-      <el-table-column prop="title" label="标题" width="180"/>
-      <el-table-column prop="slot" label="图片" width="200">
-      <template slot-scope="scope">
-          <img :src="scope.row.img_url" height="80" width="180" >
-      </template>
-      </el-table-column>
-      <el-table-column prop="h5_url" label="链接"/>
-      <el-table-column prop="updated" label="更新时间" width="160"/>
-      <el-table-column prop="sort" label="排序" width="80">
-      <template slot-scope="scope">
-          <el-switch size="small"
-          v-model="scope.row.sort"
-          :active-value="0"
-          :inactive-value="1"
-          active-color="#13ce66"
-          inactive-color="#ff4949"/>
-      </template>
-      </el-table-column>`
-  }
-  const str = `
+
 <template>
   <div class="app-container">
     <el-row>
@@ -52,7 +24,14 @@ function creatCode(obj) {
       border
       stripe
       style="width: 100%">
-      ${table_str}
+      <el-table-column prop="id" label="ID"/>
+				<el-table-column prop="username" label="用户名"/>
+				<el-table-column prop="phone" label="手机号"/>
+				<el-table-column prop="email" label="邮箱"/>
+				<el-table-column prop="real_name" label="姓名"/>
+				<el-table-column prop="group.group_type" label="角色"/>
+				<el-table-column prop="bf_logo_time" label="上次登录时间"/>
+				
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
           <el-row>
@@ -174,7 +153,7 @@ import UploadFile from '@/components/Upload/singleFile.vue'
 // import Tinymce from '@/components/Tinymce/index.vue'
 
 export default {
-  name: '${obj.object_name}Manage',
+  name: 'userManage',
   components: { Mysearch, Pagination, UploadImage, UploadFile },
   data() {
     return {
@@ -243,7 +222,7 @@ export default {
   },
   methods: {
     get_need_data(params) {
-      GetAjax('/${obj.object_name}/', params).then(response => {
+      GetAjax('/user/', params).then(response => {
         const data = response.data
         console.log(data)
         this.page_datas = data
@@ -251,7 +230,7 @@ export default {
       })
     },
     post_need_data(data) {
-      PostAjax('/${obj.object_name}/', data).then(response => {
+      PostAjax('/user/', data).then(response => {
         const data = response.data
         console.log(data)
         this.centerDialog = false
@@ -265,7 +244,7 @@ export default {
       })
     },
     patch_need_data(data) {
-      PatchAjax('/${obj.object_name}/' + data.id + '/', data).then(response => {
+      PatchAjax('/user/' + data.id + '/', data).then(response => {
         const data = response.data
         console.log(data)
         this.centerDialog_patch = false
@@ -279,7 +258,7 @@ export default {
       })
     },
     delete_need_data(data) {
-      DeleteAjax('/${obj.object_name}/' + data.id + '/', data).then(response => {
+      DeleteAjax('/user/' + data.id + '/', data).then(response => {
         const data = response.data
         console.log(data)
         this.centerDialog_delete = false
@@ -366,8 +345,3 @@ export default {
 
 <style scoped>
 </style>  
-`
-  return str
-}
-
-module.exports.creatCode = creatCode

@@ -10,27 +10,62 @@ const router = require('./routerStr');
 var obj_list = [
     {
         dir_name:'system',
+        dir_name_cn:'系统管理',
         childs: [
             {
-                object_name:'group',
-                fields:[{prop:'id',label:'ID'},{prop:'group_type',label:'角色类型'}]
+                object_name:'user',
+                object_name_cn:'用户管理',
+                fields:[
+                    {prop:'id',label:'ID'},
+                    {prop:'username',label:'用户名'},
+                    {prop:'phone',label:'手机号'},
+                    {prop:'email',label:'邮箱'},
+                    {prop:'real_name',label:'姓名'},
+                    {prop:'group.group_type',label:'角色'},
+                    {prop:'bf_logo_time',label:'上次登录时间'},
+                ]
             },
             {
-                object_name:'user',
-                fields:[{prop:'id',label:'ID'},{prop:'username',label:'用户名'}]
+                object_name:'auth',
+                object_name_cn:'权限管理',
+                fields:[
+                    {prop:'id',label:'ID'},
+                    {prop:'auth_type',label:'权限名称'},
+                ]
             }
         ]
     },
     {
-        dir_name:'info',
+        dir_name:'flow',
+        dir_name_cn:'审批流',
         childs: [
             {
-                object_name:'company',
-                fields:[{prop:'id',label:'ID'},{prop:'name',label:'公司名称'}]
+                object_name:'flowgroup',
+                object_name_cn:'审批组管理',
+                fields:[
+                    {prop:'id',label:'ID'},
+                    {prop:'name',label:'审批组名称'},
+                    {prop:'users',label:'组内用户'},
+                ]
             },
             {
-                object_name:'employ',
-                fields:[{prop:'id',label:'ID'},{prop:'real_name',label:'员工名称'}]
+                object_name:'approvalflow',
+                object_name_cn:'审批流设置',
+                fields:[
+                    {prop:'id',label:'ID'},
+                    {prop:'name',label:'审批名称'},
+                ]
+            },
+            {
+                object_name:'flowbody',
+                object_name_cn:'审批主体',
+                fields:[
+                    {prop:'id',label:'ID'},
+                    {prop:'abstract',label:'摘要'},
+                    {prop:'user.username',label:'申请人'},
+                    {prop:'flow_file',label:'附件'},
+                    {prop:'content',label:'备注'},
+                ]
             }
         ]
     }
