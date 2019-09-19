@@ -145,8 +145,24 @@ class ObjectFlowSerializer(serializers.ModelSerializer):
 class UpdateFlowBodySerializer(serializers.ModelSerializer):
     class Meta:
         model = FlowBody
-        exclude = ('deleted','object_flow','user',) # or fields = '__all__' or fields = ['field01','field01',]
-        # read_only_fields = ('field01', )
+        exclude = ('deleted','object_flow','user',)
+
+    def validate(self, attrs):
+        print('查看attrs',attrs)
+        print(attrs.get('status'))
+        if self.instance.status == 3:
+            raise serializers.ValidationError("已撤回，无法操作。")
+        if attrs.get('status') and attrs.get('status') in [0, '0']:
+            object_flow_fucs = ObjectFlowFuc.objects.filter(object_flow_id=self.instance.object_flow.id)
+            for item in object_flow_fucs:
+                item.flowfuc_type = 0
+                if item.flowfuc_grade == 1:
+                    item.upper_flow_result = 1
+                else:
+                    item.upper_flow_result = 0
+                item.save()
+        return attrs
+
 # 返回 审批主体 序列化器
 class ReturnFlowBodySerializer(serializers.ModelSerializer):
     object_flow = ObjectFlowSerializer()

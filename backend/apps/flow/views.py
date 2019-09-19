@@ -66,7 +66,7 @@ class FlowGroupViewset(ModelViewSet):
     destroy:  删除审批组
     list:  获取审批组列表
     '''
-    queryset = FlowGroup.objects.all().order_by('-updated')
+    queryset = FlowGroup.objects.all().order_by('-update_time')
     authentication_classes = (JWTAuthentication,)
     permission_classes = [BaseAuthPermission, ]
     throttle_classes = [VisitThrottle]
@@ -74,7 +74,7 @@ class FlowGroupViewset(ModelViewSet):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
     # search_fields = ('name', )
     # filter_fields = ()
-    ordering_fields = ('updated', 'sort_time', 'created',)
+    ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
 
     def get_serializer_class(self):
@@ -86,9 +86,11 @@ class FlowGroupViewset(ModelViewSet):
 
     def get_queryset(self):
         if bool(self.request.auth) and self.request.user.group_id == 1:
-            return FlowGroup.objects.all().order_by('-updated')
+            return FlowGroup.objects.all().order_by('-update_time')
+        elif bool(self.request.auth):
+            return FlowGroup.objects.filter(user_id=self.request.user.id).order_by('-update_time')
         else:
-            return FlowGroup.objects.filter(user_id=self.request.user.id).order_by('-updated')
+            return FlowGroup.objects.filter(id=0).order_by('-update_time')
                 
 
 
@@ -102,7 +104,7 @@ class ApprovalFlowViewset(ModelViewSet):
     destroy:  删除审批设置
     list:  获取审批设置列表
     '''
-    queryset = ApprovalFlow.objects.all().order_by('-updated')
+    queryset = ApprovalFlow.objects.all().order_by('-update_time')
     authentication_classes = (JWTAuthentication,)
     permission_classes = [BaseAuthPermission, ]
     throttle_classes = [VisitThrottle]
@@ -110,7 +112,7 @@ class ApprovalFlowViewset(ModelViewSet):
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
     # search_fields = ('name', )
     # filter_fields = ('flow_group', )
-    ordering_fields = ('updated', 'sort_time', 'created',)
+    ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
 
     def get_serializer_class(self):
@@ -118,14 +120,7 @@ class ApprovalFlowViewset(ModelViewSet):
             return AddApprovalFlowSerializer
         if self.action == 'update' or self.action == 'partial_update':
             return UpdateApprovalFlowSerializer
-        return ReturnApprovalFlowSerializer
-
-    def get_queryset(self):
-        if bool(self.request.auth) and self.request.user.group_id == 1:
-            return ApprovalFlow.objects.all().order_by('-updated')
-        else:
-            return ApprovalFlow.objects.filter(user_id=self.request.user.id).order_by('-updated')
-                
+        return ReturnApprovalFlowSerializer   
 
 
 # 审批主体 ModelViewSet视图
@@ -138,15 +133,15 @@ class FlowBodyViewset(ModelViewSet):
     destroy:  删除审批主体
     list:  获取审批主体列表
     '''
-    queryset = FlowBody.objects.all().order_by('-updated')
+    queryset = FlowBody.objects.all().order_by('-update_time')
     authentication_classes = (JWTAuthentication,)
     permission_classes = [BaseAuthPermission, ]
     throttle_classes = [VisitThrottle]
     serializer_class = ReturnFlowBodySerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
-    # search_fields = ('abstract', 'content', )
-    # filter_fields = ('user', 'object_flow', )
-    ordering_fields = ('updated', 'sort_time', 'created',)
+    search_fields = ('abstract', 'content', )
+    filter_fields = ('user', 'object_flow', )
+    ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
 
     def get_serializer_class(self):
@@ -158,10 +153,12 @@ class FlowBodyViewset(ModelViewSet):
 
     def get_queryset(self):
         if bool(self.request.auth) and self.request.user.group_id == 1:
-            return FlowBody.objects.all().order_by('-updated')
+            return FlowBody.objects.all().order_by('-update_time')
+        elif bool(self.request.auth):
+            return FlowBody.objects.filter(user_id=self.request.user.id).order_by('-update_time')
         else:
-            return FlowBody.objects.filter(user_id=self.request.user.id).order_by('-updated')
-                
+            return FlowBody.objects.filter(id=0).order_by('-update_time')  
+
     def create(self, request, *args, **kwargs):
         print('查看data：', request.data)
         serializer = self.get_serializer(data=request.data)
@@ -172,14 +169,37 @@ class FlowBodyViewset(ModelViewSet):
         return Response(json_data, status=status.HTTP_201_CREATED)
 
 
+# 返回所有我需要审批的审批主体
+class FlowBodyNeedFlowViewset(mixins.RetrieveModelMixin,mixins.ListModelMixin,GenericViewSet):
+    '''
+    retrieve:  检索某个审批主体
+    list:  获取审批主体列表
+    '''
+    queryset = FlowBody.objects.all().order_by('-update_time')
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = [BaseAuthPermission, ]
+    throttle_classes = [VisitThrottle]
+    serializer_class = ReturnFlowBodySerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
+    search_fields = ('abstract', 'content', )
+    filter_fields = ('user', 'object_flow', )
+    ordering_fields = ('update_time', 'sort_time', 'create_time',)
+    pagination_class = Pagination
+
+    def get_queryset(self):
+        if bool(self.request.auth):
+            # 反向查找出用户所在的flowgroup
+            all_flowgroup_ids = [item.id for item in self.request.user.flow_groups.all()]
+            all_obj_flow_ids = [item.object_flow_id for item in ObjectFlowFuc.objects.filter(flow_group_id__in=all_flowgroup_ids)]
+            return FlowBody.objects.filter(object_flow_id__in=all_obj_flow_ids).order_by('-update_time')
+        else:
+            return FlowBody.objects.filter(id=0).order_by('-update_time')  
+
+
 class ObjectFlowViewSerializer(serializers.Serializer):
     # 审批接口使用
     id = serializers.IntegerField() # 审批的ID
-    flowfuc_type_choices = (
-        (1, '通过'),
-        (2, '驳回'),
-    )
-    flowfuc_type = serializers.IntegerField(choices=flowfuc_type_choices)
+    flowfuc_type = serializers.IntegerField() # 审批标志 1：通过；2：驳回
 
 
 class ObjectFlowView(generics.GenericAPIView):
