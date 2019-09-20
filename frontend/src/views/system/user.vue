@@ -54,49 +54,42 @@
       center>
       <div>
         <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
-          <el-form-item label="标题" prop="title">
-            <el-input size="small" v-model="ruleForm.title"/>
+          <el-form-item label="用户名" prop="username">
+            <el-input size="small" v-model="ruleForm.username"/>
           </el-form-item>
-          <el-form-item label="排序" prop="sort">
-            <el-input size="small" v-model.number="ruleForm.sort"/>
+          <el-form-item label="密码" prop="password">
+            <el-input size="small" type="password" v-model="ruleForm.password"/>
           </el-form-item>
-          <el-form-item label="区域" prop="region">
-            <el-select size="small" v-model="ruleForm.region" placeholder="请选择活动区域" filterable clearable style="width: 100%;">
-              <el-option label="区域一" value="1"/>
-              <el-option label="区域二" value="2"/>
+          <el-form-item label="角色" prop="group">
+            <el-select size="small" v-model="ruleForm.group" placeholder="请选择角色" filterable clearable style="width: 100%;">
+              <el-option label="管理员" :value="2"/>
+              <el-option label="普通用户" :value="3"/>
             </el-select>
+          </el-form-item>
+          <el-form-item label="权限" prop="auth">
+            <el-select size="small" v-model="ruleForm.auth" placeholder="请选择权限" filterable clearable style="width: 100%;">
+              <el-option v-for="item in auth_datas" :key="item.id" :label="item.auth_type" :value="item.id"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="手机号" prop="phone">
+            <el-input size="small" v-model="ruleForm.phone"/>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input size="small" v-model="ruleForm.email"/>
+          </el-form-item>
+          <el-form-item label="姓名" prop="real_name">
+            <el-input size="small" v-model="ruleForm.real_name"/>
           </el-form-item>
           <el-form-item label="状态" required>
             <el-switch size="small"
-              v-model="ruleForm.is_status"
+              v-model="ruleForm.status"
+              :active-value="1"
+              :inactive-value="0"
               active-color="#13ce66"
               inactive-color="#ff4949" />
           </el-form-item>
-          <el-form-item label="日期" prop="date">
-            <el-date-picker size="small" v-model="ruleForm.date" type="date" placeholder="选择日期" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="时间" prop="time">
-            <el-time-picker size="small" v-model="ruleForm.time" type="fixed-time" placeholder="选择时间" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="类型" prop="type">
-            <el-checkbox-group size="small" v-model="ruleForm.type">
-              <el-checkbox label="0" name="type">类型01</el-checkbox>
-              <el-checkbox label="1" name="type">类型02</el-checkbox>
-              <el-checkbox label="2" name="type">类型03</el-checkbox>
-              <el-checkbox label="3" name="type">类型04</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-          <el-form-item label="图片" prop="img_url">
-            <upload-image v-model="ruleForm.img_url"/>
-          </el-form-item>
-          <el-form-item label="文件" prop="rule_file">
-            <upload-file v-model="ruleForm.rule_file"/>
-          </el-form-item>
-          <el-form-item label="内容">
-            <el-input size="small" v-model="ruleForm.desc" type="textarea"/>
-          </el-form-item>
-          <el-form-item label="富文本编辑器" prop="rule_h5">
-            <!-- <tinymce v-model="ruleForm.rule_h5"/> -->
+          <el-form-item label="备注">
+            <el-input size="small" v-model="ruleForm.content" type="textarea"/>
           </el-form-item>
         </el-form>
       </div>
@@ -125,8 +118,44 @@
       width="50%"
       center>
       <div>
-        <el-form ref="ruleForm_patch" :model="ruleForm_patch" :rules="rules_patch" label-width="100px">
-          
+        <el-form ref="ruleForm_patch" :model="ruleForm_patch" :rules="rules" label-width="100px">
+          <el-form-item label="用户名" prop="username">
+            <el-input size="small" v-model="ruleForm_patch.username"/>
+          </el-form-item>
+          <el-form-item label="密码">
+            <el-input size="small" type="password" v-model="ruleForm_patch.password"/>
+          </el-form-item>
+          <el-form-item label="角色" prop="group">
+            <el-select size="small" v-model="ruleForm_patch.group" placeholder="请选择角色" filterable clearable style="width: 100%;">
+              <el-option label="管理员" :value="2"/>
+              <el-option label="普通用户" :value="3"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="权限" prop="auth">
+            <el-select size="small" v-model="ruleForm_patch.auth" placeholder="请选择权限" filterable clearable style="width: 100%;">
+              <el-option v-for="item in auth_datas" :key="item.id" :label="item.auth_type" :value="item.id"/>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="手机号" prop="phone">
+            <el-input size="small" v-model="ruleForm_patch.phone"/>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input size="small" v-model="ruleForm_patch.email"/>
+          </el-form-item>
+          <el-form-item label="姓名" prop="real_name">
+            <el-input size="small" v-model="ruleForm_patch.real_name"/>
+          </el-form-item>
+          <el-form-item label="状态" required>
+            <el-switch size="small"
+              v-model="ruleForm_patch.status"
+              :active-value="1"
+              :inactive-value="0"
+              active-color="#13ce66"
+              inactive-color="#ff4949" />
+          </el-form-item>
+          <el-form-item label="备注">
+            <el-input size="small" v-model="ruleForm_patch.content" type="textarea"/>
+          </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -162,44 +191,38 @@ export default {
       centerDialog_patch: false,
       page_datas: [],
       ruleForm: {
-        title: '',
-        img_url: '',
-        rule_file: '',
-        rule_h5: '',
-        region: '',
-        type: [],
-        is_status: false,
-        sort: '',
-        date: '',
-        time: '',
-        desc: ''
+        username: '',
+        password: '',
+        phone: '',
+        email: '',
+        content: '',
+        auth: '',
+        status: false,
+        group: '',
+        real_name: ''
       },
       rules: {
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
         ],
-        region: [
-          { required: true, message: '请选择活动区域', trigger: 'change' }
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
         ],
-        img_url: [
-          { required: true, message: '请上传图片', trigger: 'change' }
+        real_name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' }
         ],
-        sort: [
-          { required: true, type: 'number', message: '请输入排序序号', trigger: 'blur' },
-          { type: 'number', message: '必须为数字值' }
+        phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' }
         ],
-        date: [
-          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' }
         ],
-        time: [
-          { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
+        group: [
+          { required: true, message: '请选择角色', trigger: 'change' }
         ],
-        type: [
-          { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
+        auth: [
+          { required: true, message: '请选择权限', trigger: 'change' }
         ],
-        desc: [
-          { required: true, message: '请填写活动形式', trigger: 'blur' }
-        ]
       },
       ruleForm_patch: {
         
@@ -214,11 +237,13 @@ export default {
         count: 0,
         search: '',
         search_type: '',
-      }
+      },
+      auth_datas: []
     }
   },
   created: function() {
     this.get_need_data(this.my_pagination)
+    this.get_auth_data()
   },
   methods: {
     get_need_data(params) {
@@ -227,6 +252,13 @@ export default {
         console.log(data)
         this.page_datas = data
         this.my_pagination.count = response.count
+      })
+    },
+    get_auth_data(params) {
+      GetAjax('/auth/', params).then(response => {
+        const data = response.data
+        console.log(data)
+        this.auth_datas = data
       })
     },
     post_need_data(data) {
@@ -277,7 +309,7 @@ export default {
             // datetime.format(this.ruleForm.date, 'YYYY-MM-DD')
             // console.log(datetime.format(this.ruleForm.time, 'hh:mm:ss'))
             console.log(this.ruleForm)
-            // this.post_need_data(this.ruleForm)
+            this.post_need_data(this.ruleForm)
           } else {
             console.log(this.ruleForm_patch)
             // this.patch_need_data(this.ruleForm_patch)
@@ -312,11 +344,11 @@ export default {
     // 编辑按钮
     edit_data(row) {
       console.log(row)
-      this.ruleForm_patch.title = row.title
-      this.ruleForm_patch.h5_url = row.h5_url
-      this.ruleForm_patch.sort = row.sort
-      this.ruleForm_patch.img_url = row.img_url
-      this.ruleForm_patch.id = row.id
+      this.ruleForm_patch = JSON.parse(JSON.stringify(row))
+      this.ruleForm_patch.group = row.group.id
+      if (row.auth) {
+        this.ruleForm_patch.auth = row.auth.id
+      }
       this.centerDialog_patch = true
     },
     // 搜索层相关

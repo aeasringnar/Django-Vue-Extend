@@ -123,7 +123,42 @@
       center>
       <div>
         <el-form ref="ruleForm_patch" :model="ruleForm_patch" :rules="rules_patch" label-width="100px">
-          
+          <el-form-item label="权限名称" prop="auth_type">
+            <el-input size="small" v-model="ruleForm_patch.auth_type"/>
+          </el-form-item>
+          <h3>权限配置：</h3>
+          <el-form-item v-for="(data,index) in ruleForm_patch.auth_permissions" :key="index" :label="data.object_name_cn + ':'">
+            <el-row>
+              <el-col v-if="data.auth_list != null" :span="6">
+                <el-switch
+                  v-model="data.auth_list"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                查看
+              </el-col>
+              <el-col v-if="data.auth_create != null" :span="6">
+                <el-switch
+                  v-model="data.auth_create"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                新增
+              </el-col>
+              <el-col v-if="data.auth_update != null" :span="6">
+                <el-switch
+                  v-model="data.auth_update"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                修改
+              </el-col>
+              <el-col v-if="data.auth_destroy != null" :span="6">
+                <el-switch
+                  v-model="data.auth_destroy"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"/>
+                删除
+              </el-col>
+            </el-row>
+          </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -134,7 +169,7 @@
   </div>
 </template>
 <style>
-.el-table .cell .el-tooltip {
+.el-table .cell {
   white-space: pre-line;
 }
 </style>
@@ -256,7 +291,7 @@ export default {
         const data = response.data
         console.log(data)
         this.centerDialog_patch = false
-        this.$refs['ruleForm'].resetFields()
+        // this.$refs['ruleForm_path'].resetFields()
         this.$message({
           showClose: true,
           message: '修改成功！',
@@ -288,7 +323,7 @@ export default {
             this.post_need_data(this.ruleForm)
           } else {
             console.log(this.ruleForm_patch)
-            // this.patch_need_data(this.ruleForm_patch)
+            this.patch_need_data(this.ruleForm_patch)
           }
         } else {
           console.log('error submit!!')
@@ -320,11 +355,19 @@ export default {
     // 编辑按钮
     edit_data(row) {
       console.log(row)
-      this.ruleForm_patch.title = row.title
-      this.ruleForm_patch.h5_url = row.h5_url
-      this.ruleForm_patch.sort = row.sort
-      this.ruleForm_patch.img_url = row.img_url
-      this.ruleForm_patch.id = row.id
+      this.ruleForm_patch = JSON.parse(JSON.stringify(row))
+      for (var i in this.ruleForm.auth_permissions) {
+        var is_have = false
+        for (var j in this.ruleForm_patch.auth_permissions) {
+          if (this.ruleForm.auth_permissions[i].object_name === this.ruleForm_patch.auth_permissions[j].object_name) {
+            is_have = true
+            break
+          }
+        }
+        if (!is_have) {
+          this.ruleForm_patch.auth_permissions.push(this.ruleForm.auth_permissions[i])
+        }
+      }
       this.centerDialog_patch = true
     },
     // 搜索层相关
