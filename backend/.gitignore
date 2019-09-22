@@ -2,6 +2,8 @@
 *.pyo
 *.mo
 *~
+*.sqlite3
+db.sqlite3
 .coverage
 log/**
 !log/placeholder

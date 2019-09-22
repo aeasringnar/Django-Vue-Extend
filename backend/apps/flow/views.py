@@ -72,7 +72,7 @@ class FlowGroupViewset(ModelViewSet):
     throttle_classes = [VisitThrottle]
     serializer_class = ReturnFlowGroupSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
-    # search_fields = ('name', )
+    search_fields = ('name', )
     # filter_fields = ()
     ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
