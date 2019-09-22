@@ -4,16 +4,16 @@
     <el-row>
       <el-col :span="10">
         <el-button size="small" type="primary" @click="new_data">新增</el-button>
-        <el-button size="small" @click="centerDialog_patch = true">编辑</el-button>
+        <!-- <el-button size="small" @click="centerDialog_patch = true">编辑</el-button> -->
       </el-col>
-      <el-col :span="4"><p/></el-col>
-      <el-col :span="4">
+      <el-col :span="8"><p/></el-col>
+      <!-- <el-col :span="4">
         <el-select size="small" v-model="my_pagination.search_type" placeholder="请选择" style="width: 100%" @change="my_change">
           <el-option label="全部分类" value=""/>
           <el-option label="测试分类" value="0"/>
           <el-option label="测试分类" value="1"/>
         </el-select>
-      </el-col>
+      </el-col> -->
       <el-col :span="6">
         <mysearch v-model="my_pagination.search" @searchData="to_search"/>
       </el-col>
@@ -25,9 +25,8 @@
       stripe
       style="width: 100%">
       <el-table-column prop="id" label="ID"/>
-				<el-table-column prop="name" label="审批组名称"/>
-				<el-table-column prop="users" label="组内用户"/>
-				
+      <el-table-column prop="name" label="审批组名称"/>
+      <el-table-column prop="users" label="组内用户"/>
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
           <el-row>
@@ -50,49 +49,13 @@
       center>
       <div>
         <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
-          <el-form-item label="标题" prop="title">
-            <el-input size="small" v-model="ruleForm.title"/>
+          <el-form-item label="名称" prop="name">
+            <el-input size="small" v-model="ruleForm.name"/>
           </el-form-item>
-          <el-form-item label="排序" prop="sort">
-            <el-input size="small" v-model.number="ruleForm.sort"/>
-          </el-form-item>
-          <el-form-item label="区域" prop="region">
-            <el-select size="small" v-model="ruleForm.region" placeholder="请选择活动区域" filterable clearable style="width: 100%;">
-              <el-option label="区域一" value="1"/>
-              <el-option label="区域二" value="2"/>
+          <el-form-item label="用户" prop="users">
+            <el-select size="small" v-model="ruleForm.users" placeholder="请选择" filterable clearable multiple style="width: 100%;">
+              <el-option v-for="(data, index) in user_datas" :key="index" :label="data.username + '/' + data.real_name" :value="data.id"/>
             </el-select>
-          </el-form-item>
-          <el-form-item label="状态" required>
-            <el-switch size="small"
-              v-model="ruleForm.is_status"
-              active-color="#13ce66"
-              inactive-color="#ff4949" />
-          </el-form-item>
-          <el-form-item label="日期" prop="date">
-            <el-date-picker size="small" v-model="ruleForm.date" type="date" placeholder="选择日期" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="时间" prop="time">
-            <el-time-picker size="small" v-model="ruleForm.time" type="fixed-time" placeholder="选择时间" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="类型" prop="type">
-            <el-checkbox-group size="small" v-model="ruleForm.type">
-              <el-checkbox label="0" name="type">类型01</el-checkbox>
-              <el-checkbox label="1" name="type">类型02</el-checkbox>
-              <el-checkbox label="2" name="type">类型03</el-checkbox>
-              <el-checkbox label="3" name="type">类型04</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-          <el-form-item label="图片" prop="img_url">
-            <upload-image v-model="ruleForm.img_url"/>
-          </el-form-item>
-          <el-form-item label="文件" prop="rule_file">
-            <upload-file v-model="ruleForm.rule_file"/>
-          </el-form-item>
-          <el-form-item label="内容">
-            <el-input size="small" v-model="ruleForm.desc" type="textarea"/>
-          </el-form-item>
-          <el-form-item label="富文本编辑器" prop="rule_h5">
-            <!-- <tinymce v-model="ruleForm.rule_h5"/> -->
           </el-form-item>
         </el-form>
       </div>
@@ -122,7 +85,14 @@
       center>
       <div>
         <el-form ref="ruleForm_patch" :model="ruleForm_patch" :rules="rules_patch" label-width="100px">
-          
+          <el-form-item label="名称" prop="name">
+            <el-input size="small" v-model="ruleForm_patch.name"/>
+          </el-form-item>
+          <el-form-item label="用户" prop="users">
+            <el-select size="small" v-model="ruleForm_patch.users" placeholder="请选择" filterable clearable multiple style="width: 100%;">
+              <el-option v-for="(data, index) in user_datas" :key="index" :label="data.username + '/' + data.real_name" :value="data.id"/>
+            </el-select>
+          </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -158,50 +128,28 @@ export default {
       centerDialog_patch: false,
       page_datas: [],
       ruleForm: {
-        title: '',
-        img_url: '',
-        rule_file: '',
-        rule_h5: '',
-        region: '',
-        type: [],
-        is_status: false,
-        sort: '',
-        date: '',
-        time: '',
-        desc: ''
+        name: '',
+        users: []
       },
       rules: {
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+        name: [
+          { required: true, message: '请输入审批组名称', trigger: 'blur' }
         ],
-        region: [
-          { required: true, message: '请选择活动区域', trigger: 'change' }
-        ],
-        img_url: [
-          { required: true, message: '请上传图片', trigger: 'change' }
-        ],
-        sort: [
-          { required: true, type: 'number', message: '请输入排序序号', trigger: 'blur' },
-          { type: 'number', message: '必须为数字值' }
-        ],
-        date: [
-          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
-        ],
-        time: [
-          { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
-        ],
-        type: [
-          { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
-        ],
-        desc: [
-          { required: true, message: '请填写活动形式', trigger: 'blur' }
+        users: [
+          { required: true, message: '请至少选择一个用户', trigger: 'change' }
         ]
       },
       ruleForm_patch: {
-        
+        name: '',
+        users: []
       },
       rules_patch: {
-        
+        name: [
+          { required: true, message: '请输入审批组名称', trigger: 'blur' }
+        ],
+        users: [
+          { required: true, message: '请至少选择一个用户', trigger: 'change' }
+        ]
       },
       delete_data: {},
       my_pagination: {
@@ -210,11 +158,13 @@ export default {
         count: 0,
         search: '',
         search_type: '',
-      }
+      },
+      user_datas: []
     }
   },
   created: function() {
     this.get_need_data(this.my_pagination)
+    this.get_user_data()
   },
   methods: {
     get_need_data(params) {
@@ -223,6 +173,13 @@ export default {
         console.log(data)
         this.page_datas = data
         this.my_pagination.count = response.count
+      })
+    },
+    get_user_data(params) {
+      GetAjax('/user/', params).then(response => {
+        const data = response.data
+        console.log(data)
+        this.user_datas = data
       })
     },
     post_need_data(data) {
@@ -273,7 +230,7 @@ export default {
             // datetime.format(this.ruleForm.date, 'YYYY-MM-DD')
             // console.log(datetime.format(this.ruleForm.time, 'hh:mm:ss'))
             console.log(this.ruleForm)
-            // this.post_need_data(this.ruleForm)
+            this.post_need_data(this.ruleForm)
           } else {
             console.log(this.ruleForm_patch)
             // this.patch_need_data(this.ruleForm_patch)
@@ -308,11 +265,7 @@ export default {
     // 编辑按钮
     edit_data(row) {
       console.log(row)
-      this.ruleForm_patch.title = row.title
-      this.ruleForm_patch.h5_url = row.h5_url
-      this.ruleForm_patch.sort = row.sort
-      this.ruleForm_patch.img_url = row.img_url
-      this.ruleForm_patch.id = row.id
+      this.ruleForm_patch = JSON.parse(JSON.stringify(row))
       this.centerDialog_patch = true
     },
     // 搜索层相关
