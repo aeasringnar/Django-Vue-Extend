@@ -110,16 +110,14 @@ class ApprovalFlowViewset(ModelViewSet):
     throttle_classes = [VisitThrottle]
     serializer_class = ReturnApprovalFlowSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
-    # search_fields = ('name', )
-    # filter_fields = ('flow_group', )
+    search_fields = ('name', )
+    filter_fields = ('flow_group', )
     ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
 
     def get_serializer_class(self):
-        if self.action == 'create':
+        if self.action in ['create','update','partial_update']:
             return AddApprovalFlowSerializer
-        if self.action == 'update' or self.action == 'partial_update':
-            return UpdateApprovalFlowSerializer
         return ReturnApprovalFlowSerializer   
 
 
