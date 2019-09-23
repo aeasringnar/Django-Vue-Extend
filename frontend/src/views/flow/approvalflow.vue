@@ -4,7 +4,7 @@
     <el-row>
       <el-col :span="10">
         <el-button size="small" type="primary" @click="new_data">新增</el-button>
-        <el-button size="small" @click="centerDialog_patch = true">编辑</el-button>
+        <!-- <el-button size="small" @click="centerDialog_patch = true">编辑</el-button> -->
       </el-col>
       <el-col :span="4"><p/></el-col>
       <el-col :span="4">
@@ -25,8 +25,12 @@
       stripe
       style="width: 100%">
       <el-table-column prop="id" label="ID"/>
-				<el-table-column prop="name" label="审批名称"/>
-				
+      <el-table-column prop="name" label="审批名称"/>
+      <el-table-column prop="approval_flow_fucs" label="审批流">
+      <template slot-scope="scope">
+        <span>{{ get_approval_flow(scope.row.approval_flow_fucs) }}</span>
+      </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
           <el-row>
@@ -49,49 +53,40 @@
       center>
       <div>
         <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="100px">
-          <el-form-item label="标题" prop="title">
-            <el-input size="small" v-model="ruleForm.title"/>
+          <el-form-item label="审批流名称" prop="name">
+            <el-input size="small" v-model="ruleForm.name"/>
           </el-form-item>
-          <el-form-item label="排序" prop="sort">
-            <el-input size="small" v-model.number="ruleForm.sort"/>
-          </el-form-item>
-          <el-form-item label="区域" prop="region">
-            <el-select size="small" v-model="ruleForm.region" placeholder="请选择活动区域" filterable clearable style="width: 100%;">
-              <el-option label="区域一" value="1"/>
-              <el-option label="区域二" value="2"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="状态" required>
-            <el-switch size="small"
-              v-model="ruleForm.is_status"
-              active-color="#13ce66"
-              inactive-color="#ff4949" />
-          </el-form-item>
-          <el-form-item label="日期" prop="date">
-            <el-date-picker size="small" v-model="ruleForm.date" type="date" placeholder="选择日期" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="时间" prop="time">
-            <el-time-picker size="small" v-model="ruleForm.time" type="fixed-time" placeholder="选择时间" style="width: 100%;"/>
-          </el-form-item>
-          <el-form-item label="类型" prop="type">
-            <el-checkbox-group size="small" v-model="ruleForm.type">
-              <el-checkbox label="0" name="type">类型01</el-checkbox>
-              <el-checkbox label="1" name="type">类型02</el-checkbox>
-              <el-checkbox label="2" name="type">类型03</el-checkbox>
-              <el-checkbox label="3" name="type">类型04</el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
-          <el-form-item label="图片" prop="img_url">
-            <upload-image v-model="ruleForm.img_url"/>
-          </el-form-item>
-          <el-form-item label="文件" prop="rule_file">
-            <upload-file v-model="ruleForm.rule_file"/>
-          </el-form-item>
-          <el-form-item label="内容">
-            <el-input size="small" v-model="ruleForm.desc" type="textarea"/>
-          </el-form-item>
-          <el-form-item label="富文本编辑器" prop="rule_h5">
-            <!-- <tinymce v-model="ruleForm.rule_h5"/> -->
+          <el-row v-for="(domain, index) in ruleForm.approval_flow_fucs" :key="index">
+            <el-col :span="11">
+              <el-form-item
+                :label="'审批组' + (index + 1)"
+                :prop="'approval_flow_fucs.' + index + '.flow_group'"
+                :rules="{
+                  required: true, message: '请选择审批组', trigger: 'change'
+                }"
+              >
+                <el-select v-model="domain.flow_group" placeholder="请选择" filterable>
+                  <el-option v-for="flow_group in flowgroup_datas" :key="flow_group.id" :label="flow_group.name" :value="flow_group.id"/>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="11">
+              <el-form-item
+                :label="'审批级别' + (index + 1)"
+              >
+                <el-input :value="index + 1" disabled/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="2">
+              <template v-if="index > 0">
+                <el-button @click.prevent="removeRuleFormP(domain)">删除</el-button>
+              </template>
+            </el-col>
+          </el-row>
+          <el-form-item>
+            <template v-if="ruleForm.approval_flow_fucs.length < 10">
+              <el-button @click="addRuleFormP">新增审批流</el-button>
+            </template>
           </el-form-item>
         </el-form>
       </div>
@@ -121,7 +116,41 @@
       center>
       <div>
         <el-form ref="ruleForm_patch" :model="ruleForm_patch" :rules="rules_patch" label-width="100px">
-          
+          <el-form-item label="审批流名称" prop="name">
+            <el-input size="small" v-model="ruleForm_patch.name"/>
+          </el-form-item>
+          <el-row v-for="(domain, index) in ruleForm_patch.approval_flow_fucs" :key="index">
+            <el-col :span="11">
+              <el-form-item
+                :label="'审批组' + (index + 1)"
+                :prop="'approval_flow_fucs.' + index + '.flow_group'"
+                :rules="{
+                  required: true, message: '请选择审批组', trigger: 'change'
+                }"
+              >
+                <el-select v-model="domain.flow_group" placeholder="请选择" filterable>
+                  <el-option v-for="flow_group in flowgroup_datas" :key="flow_group.id" :label="flow_group.name" :value="flow_group.id"/>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="11">
+              <el-form-item
+                :label="'审批级别' + (index + 1)"
+              >
+                <el-input :value="index + 1" disabled/>
+              </el-form-item>
+            </el-col>
+            <el-col :span="2">
+              <template v-if="index > 0">
+                <el-button @click.prevent="removeRuleFormPatchP(domain)">删除</el-button>
+              </template>
+            </el-col>
+          </el-row>
+          <el-form-item>
+            <template v-if="ruleForm_patch.approval_flow_fucs.length < 10">
+              <el-button @click="addRuleFormPatchP">新增审批流</el-button>
+            </template>
+          </el-form-item>
         </el-form>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -132,7 +161,7 @@
   </div>
 </template>
 <style>
-.el-table .cell .el-tooltip {
+.el-table .cell{
   white-space: pre-line;
 }
 </style>
@@ -157,50 +186,32 @@ export default {
       centerDialog_patch: false,
       page_datas: [],
       ruleForm: {
-        title: '',
-        img_url: '',
-        rule_file: '',
-        rule_h5: '',
-        region: '',
-        type: [],
-        is_status: false,
-        sort: '',
-        date: '',
-        time: '',
-        desc: ''
+        approval_flow_fucs: [
+          {
+            flowfuc_grade: '',
+            flow_group: ''
+          }
+        ],
+        name: ''
       },
       rules: {
-        title: [
-          { required: true, message: '请输入标题', trigger: 'blur' }
+        name: [
+          { required: true, message: '请输入审批流名称', trigger: 'blur' }
         ],
-        region: [
-          { required: true, message: '请选择活动区域', trigger: 'change' }
-        ],
-        img_url: [
-          { required: true, message: '请上传图片', trigger: 'change' }
-        ],
-        sort: [
-          { required: true, type: 'number', message: '请输入排序序号', trigger: 'blur' },
-          { type: 'number', message: '必须为数字值' }
-        ],
-        date: [
-          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
-        ],
-        time: [
-          { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
-        ],
-        type: [
-          { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
-        ],
-        desc: [
-          { required: true, message: '请填写活动形式', trigger: 'blur' }
-        ]
       },
       ruleForm_patch: {
-        
+        approval_flow_fucs: [
+          {
+            flowfuc_grade: '',
+            flow_group: ''
+          }
+        ],
+        name: ''
       },
       rules_patch: {
-        
+        name: [
+          { required: true, message: '请输入审批流名称', trigger: 'blur' }
+        ],
       },
       delete_data: {},
       my_pagination: {
@@ -209,11 +220,13 @@ export default {
         count: 0,
         search: '',
         search_type: '',
-      }
+      },
+      flowgroup_datas: []
     }
   },
   created: function() {
     this.get_need_data(this.my_pagination)
+    this.get_flowgroup_data()
   },
   methods: {
     get_need_data(params) {
@@ -222,6 +235,13 @@ export default {
         console.log(data)
         this.page_datas = data
         this.my_pagination.count = response.count
+      })
+    },
+    get_flowgroup_data(params) {
+      GetAjax('/flowgroup/', params).then(response => {
+        const data = response.data
+        console.log(data)
+        this.flowgroup_datas = data
       })
     },
     post_need_data(data) {
@@ -243,7 +263,7 @@ export default {
         const data = response.data
         console.log(data)
         this.centerDialog_patch = false
-        this.$refs['ruleForm'].resetFields()
+        this.$refs['ruleForm_patch'].resetFields()
         this.$message({
           showClose: true,
           message: '修改成功！',
@@ -271,11 +291,17 @@ export default {
           if (formName == 'ruleForm') {
             // datetime.format(this.ruleForm.date, 'YYYY-MM-DD')
             // console.log(datetime.format(this.ruleForm.time, 'hh:mm:ss'))
+            for (var i in this.ruleForm.approval_flow_fucs) {
+              this.ruleForm.approval_flow_fucs[i].flowfuc_grade = parseInt(i) + 1
+            }
             console.log(this.ruleForm)
-            // this.post_need_data(this.ruleForm)
+            this.post_need_data(this.ruleForm)
           } else {
+            for (var i in this.ruleForm_patch.approval_flow_fucs) {
+              this.ruleForm_patch.approval_flow_fucs[i].flowfuc_grade = parseInt(i) + 1
+            }
             console.log(this.ruleForm_patch)
-            // this.patch_need_data(this.ruleForm_patch)
+            this.patch_need_data(this.ruleForm_patch)
           }
         } else {
           console.log('error submit!!')
@@ -307,11 +333,10 @@ export default {
     // 编辑按钮
     edit_data(row) {
       console.log(row)
-      this.ruleForm_patch.title = row.title
-      this.ruleForm_patch.h5_url = row.h5_url
-      this.ruleForm_patch.sort = row.sort
-      this.ruleForm_patch.img_url = row.img_url
-      this.ruleForm_patch.id = row.id
+      this.ruleForm_patch = JSON.parse(JSON.stringify(row))
+      for(let i in this.ruleForm_patch.approval_flow_fucs) {
+        this.ruleForm_patch.approval_flow_fucs[i].flow_group = this.ruleForm_patch.approval_flow_fucs[i].flow_group.id
+      }
       this.centerDialog_patch = true
     },
     // 搜索层相关
@@ -333,6 +358,37 @@ export default {
       this.my_pagination.search_type = val
       console.log(this.my_pagination.search_type)
       this.get_need_data(this.my_pagination)
+    },
+    removeRuleFormP(item) {
+      var index = this.ruleForm.approval_flow_fucs.indexOf(item)
+      if (index !== -1) {
+        this.ruleForm.approval_flow_fucs.splice(index, 1)
+      }
+    },
+    addRuleFormP() {
+      this.ruleForm.approval_flow_fucs.push({
+        flowfuc_grade: '',
+        flow_group: ''
+      })
+    },
+    removeRuleFormPatchP(item) {
+      var index = this.ruleForm_patch.approval_flow_fucs.indexOf(item)
+      if (index !== -1) {
+        this.ruleForm_patch.approval_flow_fucs.splice(index, 1)
+      }
+    },
+    addRuleFormPatchP() {
+      this.ruleForm_patch.approval_flow_fucs.push({
+        flowfuc_grade: '',
+        flow_group: ''
+      })
+    },
+    get_approval_flow(fucs) {
+      var fucs_str = ''
+      for (var i in fucs) {
+        fucs_str += '审批级别：' + fucs[i].flowfuc_grade + '；' + '审批组：' + fucs[i].flow_group.name + '；\n'
+      }
+      return fucs_str
     }
   }
 }

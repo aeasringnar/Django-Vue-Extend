@@ -26,7 +26,11 @@
       style="width: 100%">
       <el-table-column prop="id" label="ID"/>
       <el-table-column prop="name" label="审批组名称"/>
-      <el-table-column prop="users" label="组内用户"/>
+      <el-table-column prop="users" label="组内用户">
+        <template slot-scope="scope">
+          <span>{{ get_users(scope.row.users) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
           <el-row>
@@ -287,6 +291,14 @@ export default {
       this.my_pagination.search_type = val
       console.log(this.my_pagination.search_type)
       this.get_need_data(this.my_pagination)
+    },
+    get_users(users) {
+      console.log('查看users：', users)
+      var user_str = ''
+      for(let i in users) {
+        user_str += users[i].username + '/' + users[i].real_name + '；'
+      }
+      return user_str
     }
   }
 }
