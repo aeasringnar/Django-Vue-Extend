@@ -111,7 +111,7 @@ class ApprovalFlowViewset(ModelViewSet):
     serializer_class = ReturnApprovalFlowSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
     search_fields = ('name', )
-    filter_fields = ('flow_group', )
+    # filter_fields = ('flow_group', )
     ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
 

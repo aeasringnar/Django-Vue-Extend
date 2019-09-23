@@ -166,6 +166,7 @@ class UpdateFlowBodySerializer(serializers.ModelSerializer):
 # 返回 审批主体 序列化器
 class ReturnFlowBodySerializer(serializers.ModelSerializer):
     object_flow = ObjectFlowSerializer()
+    user = AddUserSerializer()
     class Meta:
         model = FlowBody
         exclude = ('deleted',) # or fields = '__all__' or fields = ['field01','field01',]
