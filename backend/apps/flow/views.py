@@ -88,7 +88,7 @@ class FlowGroupViewset(ModelViewSet):
         if bool(self.request.auth) and self.request.user.group_id == 1:
             return FlowGroup.objects.all().order_by('-update_time')
         elif bool(self.request.auth):
-            return FlowGroup.objects.filter(user_id=self.request.user.id).order_by('-update_time')
+            return FlowGroup.objects.filter().order_by('-update_time')
         else:
             return FlowGroup.objects.filter(id=0).order_by('-update_time')
                 
