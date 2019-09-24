@@ -4,7 +4,7 @@
     <el-row>
       <el-col :span="10">
         <el-button size="small" type="primary" @click="new_data">新增</el-button>
-        <el-button size="small" @click="centerDialog_patch = true">编辑</el-button>
+        <!-- <el-button size="small" @click="centerDialog_patch = true">编辑</el-button> -->
       </el-col>
       <el-col :span="4"><p/></el-col>
       <el-col :span="4">

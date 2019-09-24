@@ -92,21 +92,11 @@ export default {
       // this.$emit('update:img_url', file.response.data[0])
     },
     beforeAvatarUpload(file) {
-      var img_type = ['image/jpeg', 'image/jpg', 'image/png']
-      var img_index = img_type.indexOf(file.type)
-      var isJPG = false
-      if (img_index !== -1) {
-        isJPG = true
-      }
-      console.log(isJPG)
-      const isLt2M = file.size / 1024 / 1024 < 10
-      if (!isJPG) {
-        this.$message.error('允许的图片类型为 JPG / JPEG / PNG ！')
-      }
+      const isLt2M = file.size / 1024 / 1024 < 50
       if (!isLt2M) {
-        this.$message.error('允许的最大图片大小为 10MB！')
+        this.$message.error('允许的最大图片大小为 50MB！')
       }
-      return isJPG && isLt2M
+      return isLt2M
     }
   }
 }
