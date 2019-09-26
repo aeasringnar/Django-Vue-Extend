@@ -91,8 +91,26 @@ class FlowGroupViewset(ModelViewSet):
             return FlowGroup.objects.filter().order_by('-update_time')
         else:
             return FlowGroup.objects.filter(id=0).order_by('-update_time')
-                
 
+
+# 审批组 ModelViewSet视图
+class FlowGroupListViewset(mixins.RetrieveModelMixin,mixins.ListModelMixin,GenericViewSet):
+    '''
+    create:  创建审批组
+    retrieve:  检索某个审批组
+    list:  获取审批组列表
+    '''
+    queryset = FlowGroup.objects.all().order_by('-update_time')
+    authentication_classes = (JWTAuthentication,)
+    permission_classes = [JWTAuthentication, ]
+    throttle_classes = [VisitThrottle]
+    serializer_class = ReturnFlowGroupSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
+    search_fields = ('name', )
+    # filter_fields = ()
+    ordering_fields = ('update_time', 'sort_time', 'create_time',)
+    pagination_class = Pagination
+                
 
 # 审批设置 ModelViewSet视图
 class ApprovalFlowViewset(ModelViewSet):
