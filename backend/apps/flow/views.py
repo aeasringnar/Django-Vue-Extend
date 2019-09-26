@@ -156,7 +156,7 @@ class FlowBodyViewset(ModelViewSet):
     serializer_class = ReturnFlowBodySerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
     search_fields = ('abstract', 'content', )
-    filter_fields = ('user', 'object_flow', )
+    filter_fields = ('user', 'object_flow__name', )
     ordering_fields = ('update_time', 'sort_time', 'create_time',)
     pagination_class = Pagination
 
