@@ -102,7 +102,7 @@ class FlowGroupListViewset(mixins.RetrieveModelMixin,mixins.ListModelMixin,Gener
     '''
     queryset = FlowGroup.objects.all().order_by('-update_time')
     authentication_classes = (JWTAuthentication,)
-    permission_classes = [JWTAuthentication, ]
+    permission_classes = [JWTAuthPermission, ]
     throttle_classes = [VisitThrottle]
     serializer_class = ReturnFlowGroupSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
