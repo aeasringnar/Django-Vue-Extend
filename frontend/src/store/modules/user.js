@@ -2,39 +2,48 @@ import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router from '../../router'
 
-// 自动权限
-const whiteList = ['/login','/404','/','*','/dashboard']
-function handleRouter(routers) {
-  console.log('查看是否执行')
-  for (var i in routers) {
-    if (routers[i].children && routers[i].children.length > 0) {
-      handleRouter(routers[i].children)
-      var len = routers[i].children.length
-      var false_len = 0
-      for (let j in routers[i].children) {
-        if (routers[i].children[j].hidden) {
-            false_len ++
-        }
-      }
-      if (len == false_len) {
-        routers[i].hidden = true
-      } else {
-        routers[i].hidden = false
-      }
-  } else {
-    if (whiteList.indexOf(routers[i].path) == -1) {
-      if(state.auth_json[routers[i].name]) {
-        if (state.auth_json[routers[i].name].auth_list) {
-          routers[i].hidden = false
+function handleRouters(routers, auth_json) {
+  const whiteList = ['/login', '/404', '/', '*', 'dashboard']
+  const auth = auth_json
+  function handleOneRouter(router) {
+    if (!router.children) {
+      if (whiteList.indexOf(router.path) === -1) {
+        if (auth[router.name]) {
+          if (auth[router.name].auth_list) {
+            router.hidden = false
+          } else {
+            router.hidden = true
+          }
         } else {
-          routers[i].hidden = true
+          router.hidden = true
         }
-      } else {
-        routers[i].hidden = true
       }
-    }
+      return 1
+    } else {
+      var count = 1
+      for (var i in router.children) {
+        count += handleOneRouter(router.children[i])
+        if (router.children[i].children) {
+          var len = router.children[i].children.length
+          var false_len = 0
+          for (let j in router.children[i].children) {
+            if (router.children[i].children[j].hidden) {
+              false_len++
+            }
+          }
+          if (len === false_len) {
+            router.children[i].hidden = true
+          } else {
+            router.children[i].hidden = false
+          }
+        }
+      }
+      return count
     }
   }
+  var need_handle_routers = { children: routers }
+  handleOneRouter(need_handle_routers)
+  return need_handle_routers.children
 }
 
 const user = {
@@ -77,10 +86,6 @@ const user = {
       state.auth_json = auth_obj
     },
     SET_ROUTE: (state, routers) => {
-      console.log(JSON.stringify(routers))
-      
-      handleRouter(routers)
-      console.log(JSON.stringify(routers))
       state.routers = routers
     }
   },
@@ -114,8 +119,11 @@ const user = {
           if (data.group.group_type !== 'SuperAdmin') {
             commit('SET_AUTHS', data.auth.auth_permissions)
             console.log('查看auths：', state.auth_json)
-            // commit('SET_ROUTE', router)
-            // handleRouter(router)
+            console.log(router.options.routes)
+            var my_router = handleRouters(router.options.routes, state.auth_json)
+            console.log(my_router)
+            router.options.routes = my_router
+            commit('SET_ROUTE', router)
           }
           resolve(response)
         }).catch(error => {
