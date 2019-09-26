@@ -3,22 +3,20 @@
   <div class="app-container">
     <el-row>
       <el-col :span="10">
-        <el-button size="small" type="primary" @click="new_data">新增</el-button>
-        <!-- <el-button size="small" @click="centerDialog_patch = true">编辑</el-button> -->
+        <el-button v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.flowbody.auth_create" size="small" type="primary" @click="new_data">新增</el-button>
+        <p></p>
       </el-col>
       <el-col :span="4"><p/></el-col>
       <el-col :span="4">
-        <el-select size="small" v-model="my_pagination.search_type" placeholder="请选择" style="width: 100%" @change="my_change">
+        <el-select size="small" v-model="my_pagination.object_flow__name" placeholder="请选择" style="width: 100%" @change="my_change">
           <el-option label="全部分类" value=""/>
-          <el-option label="测试分类" value="0"/>
-          <el-option label="测试分类" value="1"/>
+          <el-option v-for="data in appflow_datas" :key="data.id" :label="data.name" :value="data.name"/>
         </el-select>
       </el-col>
       <el-col :span="6">
         <mysearch v-model="my_pagination.search" @searchData="to_search"/>
       </el-col>
     </el-row>
-    <br>
     <el-table
       :data="page_datas"
       border
@@ -26,15 +24,16 @@
       style="width: 100%">
       <el-table-column prop="id" label="ID"/>
       <el-table-column prop="abstract" label="摘要"/>
+      <el-table-column prop="object_flow.name" label="分类"/>
       <el-table-column prop="user.username" label="申请人"/>
       <el-table-column prop="flow_file" label="附件"/>
       <el-table-column prop="content" label="备注"/>
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
-          <el-row>
+          <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.flowbody.auth_update">
             <el-button size="small" @click="edit_data(scope.row)">编辑</el-button>
           </el-row>
-          <el-row style="margin-top: 10px;">
+          <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.flowbody.auth_destroy" style="margin-top: 10px;">
             <el-button size="small" type="danger" @click="delete_data_fuc(scope.row)">删除</el-button>
           </el-row>
         </template>
@@ -167,7 +166,7 @@ export default {
         page_size: 10,
         count: 0,
         search: '',
-        search_type: '',
+        object_flow__name: '',
       },
       appflow_datas: []
     }
@@ -294,8 +293,7 @@ export default {
     },
     my_change(val) {
       this.my_pagination.page = 1
-      this.my_pagination.search_type = val
-      console.log(this.my_pagination.search_type)
+      this.my_pagination.object_flow__name = val
       this.get_need_data(this.my_pagination)
     }
   }
