@@ -361,8 +361,8 @@ export default {
           data.flowfuc_type = parseInt(type)
         }
       }
-      console.log(row)
-      console.log(data)
+      // console.log(row)
+      // console.log(data)
       this.patch_flow_data(data)
     },
     get_des(flow) {
@@ -391,7 +391,7 @@ export default {
             }
           }
         }
-        console.log(ready_list)
+        // console.log(ready_list)
         if (ready_list.length === 1) {
           is_active = ready_list[0]
         } else if (ready_list.length === 0) {
