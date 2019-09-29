@@ -3,17 +3,17 @@
   <div class="app-container">
     <el-row>
       <el-col :span="10">
-        <el-button size="small" type="primary" @click="new_data">新增</el-button>
-        <!-- <el-button size="small" @click="centerDialog_patch = true">编辑</el-button> -->
+        <el-button v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.user.auth_create" size="small" type="primary" @click="new_data">新增</el-button>
+        <p></p>
       </el-col>
-      <el-col :span="4"><p/></el-col>
-      <el-col :span="4">
+      <el-col :span="8"><p/></el-col>
+      <!-- <el-col :span="4">
         <el-select size="small" v-model="my_pagination.search_type" placeholder="请选择" style="width: 100%" @change="my_change">
           <el-option label="全部分类" value=""/>
           <el-option label="测试分类" value="0"/>
           <el-option label="测试分类" value="1"/>
         </el-select>
-      </el-col>
+      </el-col> -->
       <el-col :span="6">
         <mysearch v-model="my_pagination.search" @searchData="to_search"/>
       </el-col>
@@ -34,10 +34,10 @@
 				
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
-          <el-row>
+          <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.user.auth_update">
             <el-button size="small" @click="edit_data(scope.row)">编辑</el-button>
           </el-row>
-          <el-row style="margin-top: 10px;">
+          <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.user.auth_destroy" style="margin-top: 10px;">
             <el-button size="small" type="danger" @click="delete_data_fuc(scope.row)">删除</el-button>
           </el-row>
         </template>
@@ -355,11 +355,11 @@ export default {
     to_search() {
       this.my_pagination.page = 1
       console.log(this.my_pagination.search)
-      // this.get_need_data(this.my_pagination)
+      this.get_need_data(this.my_pagination)
     },
     pag_change() {
       console.log(this.my_pagination)
-      // this.get_need_data(this.my_pagination)
+      this.get_need_data(this.my_pagination)
     },
     search_change() {
       console.log(this.my_pagination.search)

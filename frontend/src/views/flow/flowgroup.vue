@@ -18,6 +18,7 @@
         <mysearch v-model="my_pagination.search" @searchData="to_search"/>
       </el-col>
     </el-row>
+    <br/>
     <el-table
       :data="page_datas"
       border
@@ -275,11 +276,11 @@ export default {
     to_search() {
       this.my_pagination.page = 1
       console.log(this.my_pagination.search)
-      // this.get_need_data(this.my_pagination)
+      this.get_need_data(this.my_pagination)
     },
     pag_change() {
       console.log(this.my_pagination)
-      // this.get_need_data(this.my_pagination)
+      this.get_need_data(this.my_pagination)
     },
     search_change() {
       console.log(this.my_pagination.search)

@@ -47,6 +47,7 @@ function creatCode(obj) {
         <mysearch v-model="my_pagination.search" @searchData="to_search"/>
       </el-col>
     </el-row>
+    <br>
     <el-table
       :data="page_datas"
       border

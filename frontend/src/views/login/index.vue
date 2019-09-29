@@ -59,8 +59,8 @@ export default {
     }
     return {
       loginForm: {
-        username: '',
-        password: ''
+        username: 'zhangsan',
+        password: '123'
       },
       loginRules: {
         username: [{ required: true, message: '请输入帐号', trigger: 'blur' }],

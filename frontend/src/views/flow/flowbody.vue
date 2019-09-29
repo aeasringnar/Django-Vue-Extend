@@ -17,6 +17,7 @@
         <mysearch v-model="my_pagination.search" @searchData="to_search"/>
       </el-col>
     </el-row>
+    <br/>
     <el-table
       :data="page_datas"
       border
@@ -28,14 +29,43 @@
       <el-table-column prop="user.username" label="申请人"/>
       <el-table-column prop="flow_file" label="附件"/>
       <el-table-column prop="content" label="备注"/>
+      <el-table-column prop="status" label="状态">
+        <template slot-scope="scope">
+          <span>{{ get_status(scope.row.status) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作" width="100" align="center">
         <template slot-scope="scope">
           <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.flowbody.auth_update">
             <el-button size="small" @click="edit_data(scope.row)">编辑</el-button>
           </el-row>
-          <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.flowbody.auth_destroy" style="margin-top: 10px;">
+          <!-- <el-row v-if="$store.getters.user_obj.group.group_type === 'SuperAdmin' || $store.getters.auth_json.flowbody.auth_destroy" style="margin-top: 10px;">
             <el-button size="small" type="danger" @click="delete_data_fuc(scope.row)">删除</el-button>
-          </el-row>
+          </el-row> -->
+          <template v-if="scope.row.status !== 3">
+            <el-row style="margin-top: 10px;">
+              <el-button size="small" type="primary" @click="look_flow(scope.row.object_flow.object_flow_fucs)">查看</el-button>
+            </el-row>
+          </template>
+          <template v-if="scope.row.status == 0">
+            <template v-if="get_is_my(scope.row.object_flow.object_flow_fucs) === '1' ">
+              <template v-if="scope.row.status == 0">
+                <el-row style="margin-top: 10px;">
+                  <el-button size="small" type="primary" @click="to_flow(scope.row,1)">同意</el-button>
+                </el-row>
+                <el-row style="margin-top: 10px;">
+                  <el-button size="small" @click="to_flow(scope.row,2)">驳回</el-button>
+                </el-row>
+              </template>
+            </template>
+            <template v-else-if="get_is_my(scope.row.object_flow.object_flow_fucs) === '0'">
+              <div/>
+            </template>
+            <template v-else>
+              <br>
+              <span>{{ get_is_my(scope.row.object_flow.object_flow_fucs) }}</span>
+            </template>
+          </template>
         </template>
       </el-table-column>
     </el-table>
@@ -108,6 +138,17 @@
         <el-button size="small" type="primary" @click="submitForm('ruleForm_patch')">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      :visible.sync="look_flow_dialog"
+      title="查看审批流"
+      width="30%"
+      center>
+      <div>
+        <el-steps :active="get_active()" direction="vertical" align-center >
+          <el-step v-for="flow in show_flow" :key="flow.id" :title="flow.flowfuc_grade + '级审批'" :description="get_des(flow)" />
+        </el-steps>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <style>
@@ -132,6 +173,7 @@ export default {
   data() {
     return {
       centerDialog: false,
+      look_flow_dialog: false,
       centerDialog_delete: false,
       centerDialog_patch: false,
       page_datas: [],
@@ -168,16 +210,19 @@ export default {
         search: '',
         object_flow__name: '',
       },
-      appflow_datas: []
+      appflow_datas: [],
+      request_path: '/flowbody/',
+      show_flow: []
     }
   },
   created: function() {
+    this.request_path = this.$store.getters.user_obj.group.group_type === 'SuperAdmin'? '/flowbody/' : '/needflowbody/'
     this.get_need_data(this.my_pagination)
     this.get_appflow_data()
   },
   methods: {
     get_need_data(params) {
-      GetAjax('/flowbody/', params).then(response => {
+      GetAjax(this.request_path, params).then(response => {
         const data = response.data
         console.log(data)
         this.page_datas = data
@@ -192,7 +237,7 @@ export default {
       })
     },
     post_need_data(data) {
-      PostAjax('/flowbody/', data).then(response => {
+      PostAjax(this.request_path, data).then(response => {
         const data = response.data
         console.log(data)
         this.centerDialog = false
@@ -206,7 +251,7 @@ export default {
       })
     },
     patch_need_data(data) {
-      PatchAjax('/flowbody/' + data.id + '/', data).then(response => {
+      PatchAjax(this.request_path + data.id + '/', data).then(response => {
         const data = response.data
         console.log(data)
         this.centerDialog_patch = false
@@ -220,13 +265,25 @@ export default {
       })
     },
     delete_need_data(data) {
-      DeleteAjax('/flowbody/' + data.id + '/', data).then(response => {
+      DeleteAjax(this.request_path + data.id + '/', data).then(response => {
         const data = response.data
         console.log(data)
         this.centerDialog_delete = false
         this.$message({
           showClose: true,
           message: '删除成功！',
+          type: 'success'
+        })
+        this.get_need_data(this.my_pagination)
+      })
+    },
+    patch_flow_data(data) {
+      PatchAjax('/toflow/', data).then(response => {
+        const data = response.data
+        console.log(data)
+        this.$message({
+          showClose: true,
+          message: '操作成功',
           type: 'success'
         })
         this.get_need_data(this.my_pagination)
@@ -281,11 +338,11 @@ export default {
     to_search() {
       this.my_pagination.page = 1
       console.log(this.my_pagination.search)
-      // this.get_need_data(this.my_pagination)
+      this.get_need_data(this.my_pagination)
     },
     pag_change() {
       console.log(this.my_pagination)
-      // this.get_need_data(this.my_pagination)
+      this.get_need_data(this.my_pagination)
     },
     search_change() {
       console.log(this.my_pagination.search)
@@ -295,6 +352,100 @@ export default {
       this.my_pagination.page = 1
       this.my_pagination.object_flow__name = val
       this.get_need_data(this.my_pagination)
+    },
+    to_flow(row, type) {
+      var data = {}
+      for (var i in row.object_flow.object_flow_fucs) {
+        if (row.object_flow.object_flow_fucs[i].flow_group.users.indexOf(this.$store.getters.user_obj.id) !== -1) {
+          data.id = row.object_flow.object_flow_fucs[i].id
+          data.flowfuc_type = parseInt(type)
+        }
+      }
+      console.log(row)
+      console.log(data)
+      this.patch_flow_data(data)
+    },
+    get_des(flow) {
+      var flow_str = '审批人：' + flow.flow_group.name + '；'
+      if (flow.flowfuc_type === 0) {
+        flow_str += '审批中'
+      } else if (flow.flowfuc_type === 1) {
+        flow_str += '已审批'
+      } else if (flow.flowfuc_type === 2) {
+        flow_str += '已驳回'
+      }
+      return flow_str
+    },
+    look_flow(list) {
+      this.show_flow = list
+      this.look_flow_dialog = true
+    },
+    get_active() {
+      if (this.show_flow !== null || this.show_flow !== '') {
+        var is_active = 0
+        var ready_list = []
+        for (var i in this.show_flow) {
+          if (this.show_flow[i].flowfuc_type === 0 || this.show_flow[i].flowfuc_type === 2) {
+            if (is_active <= this.show_flow[i].flowfuc_grade) {
+              ready_list.push(parseInt(i))
+            }
+          }
+        }
+        console.log(ready_list)
+        if (ready_list.length === 1) {
+          is_active = ready_list[0]
+        } else if (ready_list.length === 0) {
+          is_active = this.show_flow.length - 1
+        } else {
+          for (var j = 0; j < ready_list.length - 1; j++) {
+            if (ready_list[j] > ready_list[j + 1]) {
+              is_active = ready_list[j + 1] // 因为这里返回的是 index 所以 is_active 返回的时候需要+1
+            }
+          }
+        }
+        return is_active + 1
+      }
+    },
+    get_status(status) {
+      if (status == 0) {
+        return '审批中'
+      } else if (status == 1) {
+        return '已审批'
+      }  else if (status == 2) {
+        return '已驳回'
+      }  else if (status == 3) {
+        return '已撤回'
+      }
+    },
+    get_is_my(list) {
+      var is_my = '0'
+      for (var i in list) {
+        if (list[i].flow_group.users.indexOf(this.$store.getters.user_obj.id) !== -1) {
+          // is_my = '测试'
+          if (list[i].flowfuc_grade === 1) {
+            if (list[i].flowfuc_type === 0) {
+              is_my = '1'
+            } else if (list[i].flowfuc_type === 1) {
+              is_my = list[i].flow_group.name + '已审批'
+            } else {
+              is_my = list[i].flow_group.name + '已驳回'
+            }
+          } else {
+            if (list[i].upper_flow_result !== 1) {
+              is_my = '等待上级审批'
+            } else {
+              if (list[i].flowfuc_type === 0) {
+                is_my = '1'
+              } else if (list[i].flowfuc_type === 1) {
+                is_my = list[i].flow_group.name + '已审批'
+              } else {
+                is_my = list[i].flow_group.name + '已驳回'
+              }
+            }
+          }
+        }
+      }
+      return is_my
     }
   }
 }
