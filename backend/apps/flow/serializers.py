@@ -128,10 +128,11 @@ class AddFlowBodySerializer(serializers.ModelSerializer, BaseModelSerializer):
     
 
 class ObjectFlowFucSerializer(serializers.ModelSerializer):
+    flow_group = AddFlowGroupSerializer()
     class Meta:
         model = ObjectFlowFuc
         exclude = ('deleted',) 
-        depth = 2
+        # depth = 1
 
 
 class ObjectFlowSerializer(serializers.ModelSerializer):

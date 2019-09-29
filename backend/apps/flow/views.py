@@ -32,6 +32,7 @@ from .serializers import *
 # from .filters import *
 from functools import reduce
 from urllib.parse import unquote_plus
+from django.db import transaction
 '''
 serializers 常用字段
 name = serializers.CharField(required=False, label='描述', max_length=None, min_length=None, allow_blank=False, trim_whitespace=True)
@@ -193,7 +194,7 @@ class FlowBodyNeedFlowViewset(mixins.RetrieveModelMixin,mixins.ListModelMixin,Ge
     '''
     queryset = FlowBody.objects.all().order_by('-update_time')
     authentication_classes = (JWTAuthentication,)
-    permission_classes = [BaseAuthPermission, ]
+    permission_classes = [JWTAuthPermission, ]
     throttle_classes = [VisitThrottle]
     serializer_class = ReturnFlowBodySerializer
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter,)
@@ -222,6 +223,7 @@ class ObjectFlowView(generics.GenericAPIView):
     serializer_class = ObjectFlowViewSerializer
     authentication_classes = (JWTAuthentication,)
 
+    @transaction.atomic
     def patch(self, request):
         '''
         审批
@@ -238,8 +240,8 @@ class ObjectFlowView(generics.GenericAPIView):
             flowfuc_type = serializer.data.get('flowfuc_type')
             json_data = {"message": '审批成功' if flowfuc_type == 1 else '驳回成功', "errorCode": 0, "data": {}}
             # 找到需要审批的审批日志记录
-            print('查看用户的flow_groups：', request.user.flow_groups)
-            object_flow_fuc = ObjectFlowFuc.objects.filter(flow_group_id__in=request.user.flow_groups, id=flow_fuc_id).first()
+            print('查看用户的flow_groups：', request.user.flow_groups.all())
+            object_flow_fuc = ObjectFlowFuc.objects.filter(flow_group_id__in=[item.id for item in request.user.flow_groups.all()], id=flow_fuc_id).first()
             print(object_flow_fuc)
             # 没有对应数据时报错
             if not object_flow_fuc:
@@ -255,7 +257,7 @@ class ObjectFlowView(generics.GenericAPIView):
             # 找到排序后的全部审批流
             object_flow_fucs = ObjectFlowFuc.objects.filter(object_flow_id=object_flow_fuc.object_flow.id).order_by('flowfuc_grade')
             # 找到归属审批流名称
-            flow_type_name = object_flow_fuc.object_flow.flow_name
+            flow_type_name = object_flow_fuc.object_flow.name
             # 当这是最后一级审批时
             if object_flow_fucs.last().id == flow_fuc_id:
                 top_flow_obj.status = flowfuc_type

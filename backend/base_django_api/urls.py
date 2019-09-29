@@ -26,7 +26,7 @@ router = DefaultRouter()
 router.register(r'user', UserViewset, base_name='账号管理')
 # 权限管理
 router.register(r'auth', AuthViewset, base_name='权限管理')
-from flow.views import FlowGroupViewset, ApprovalFlowViewset, FlowBodyViewset, FlowGroupListViewset
+from flow.views import FlowGroupViewset, ApprovalFlowViewset, FlowBodyViewset, FlowGroupListViewset, FlowBodyNeedFlowViewset, ObjectFlowView
 # 审批组管理
 router.register(r'flowgroup', FlowGroupViewset, base_name='审批组管理')
 router.register(r'getflowgroup', FlowGroupListViewset, base_name='获取审批组')
@@ -34,6 +34,7 @@ router.register(r'getflowgroup', FlowGroupListViewset, base_name='获取审批�
 router.register(r'approvalflow', ApprovalFlowViewset, base_name='审批设置管理')
 # 审批主体管理
 router.register(r'flowbody', FlowBodyViewset, base_name='审批主体管理')
+router.register(r'needflowbody', FlowBodyNeedFlowViewset, base_name='待审批列表')
 
 
 urlpatterns = [
@@ -41,9 +42,10 @@ urlpatterns = [
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('', include(router.urls)),
-    path('adminlogin/', LoginView.as_view(), name='adminlogin'),
-    path('uploadfile/', UploadFile.as_view(), name='uploadfile'),
-    path('tests/', Tests.as_view(), name='tests'),
-    path('userinfo/', UserInfo.as_view(), name='userinfo'),
-    path('celery/', BeginCelery.as_view(), name='tests'),
+    path('adminlogin/', LoginView.as_view(), name='后台登录'),
+    path('uploadfile/', UploadFile.as_view(), name='文件长传'),
+    path('tests/', Tests.as_view(), name='测试接口'),
+    path('userinfo/', UserInfo.as_view(), name='获取用户信息'),
+    path('celery/', BeginCelery.as_view(), name='测试celery'),
+    path('toflow/', ObjectFlowView.as_view(), name='审批操作'),
 ]
